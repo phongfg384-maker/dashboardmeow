@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meow Bot - Documentation & Guides</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #5865F2;
+            --primary-hover: #4752C4;
+            --bg-dark: #1e1f22;
+            --bg-sidebar: #2b2d31;
+            --bg-card: #313338;
+            --bg-hover: #3f4147;
+            --text-light: #f2f3f5;
+            --text-muted: #b5bac1;
+            --code-bg: #111214;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg-dark); color: var(--text-light); display: flex; height: 100vh; overflow: hidden; }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-dark); }
+        ::-webkit-scrollbar-thumb { background: #1a1b1e; border-radius: 4px; }
+
+        /* Sidebar Tài Liệu */
+        .docs-sidebar {
+            width: 300px;
+            background-color: var(--bg-sidebar);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            border-right: 1px solid #1f2124;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .brand { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 18px; color: #fff; text-decoration: none; margin-bottom: 25px; }
+        .brand img { width: 36px; height: 36px; object-fit: cover; }
+
+        .docs-menu-category { font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1px; margin-bottom: 10px; margin-top: 20px; }
+        .docs-menu { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+        .docs-menu li a {
+            display: block;
+            padding: 9px 12px;
+            border-radius: 6px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: 0.2s;
+        }
+        .docs-menu li a:hover, .docs-menu li a.active { background-color: var(--bg-hover); color: #fff; }
+
+        /* Nội dung chính */
+        .docs-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            background-color: var(--bg-dark);
+        }
+
+        /* 🌟 BANNER XANH GRADIENT */
+        .config-banner {
+            background: linear-gradient(135deg, #7289da 0%, #5865F2 100%);
+            padding: 35px 50px;
+            color: #fff;
+            clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            flex-shrink: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        .config-banner h1 { font-size: 2rem; font-weight: 900; text-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 5px; }
+        .config-banner p { font-size: 0.95rem; opacity: 0.9; }
+
+        /* Cụm điều khiển ở góc phải banner */
+        .banner-right {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 8px;
+        }
+
+        .back-home {
+            color: #fff; text-decoration: none; font-weight: 600; font-size: 13px;
+            background: rgba(0,0,0,0.25); padding: 8px 16px; border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.2); transition: 0.2s; display: inline-block;
+        }
+        .back-home:hover { background: rgba(0,0,0,0.4); }
+
+        .lang-switcher { display: flex; gap: 6px; align-items: center; }
+        .lang-btn {
+            background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.2);
+            color: #fff; padding: 4px 10px; border-radius: 6px; cursor: pointer;
+            font-weight: 600; font-size: 11px; transition: 0.2s;
+        }
+        .lang-btn.active, .lang-btn:hover { background: #fff; color: var(--primary); }
+
+        .docs-content {
+            padding: 20px 50px 50px 50px;
+            flex: 1;
+        }
+
+        .doc-section { display: none; animation: fadeIn 0.3s ease; max-width: 850px; }
+        .doc-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .doc-section h2 { font-size: 1.8rem; font-weight: 800; color: #fff; margin-bottom: 15px; }
+        .doc-section h3 { font-size: 1.3rem; font-weight: 700; color: #fff; margin-top: 25px; margin-bottom: 10px; }
+        .doc-section p { color: var(--text-muted); line-height: 1.7; font-size: 15px; margin-bottom: 15px; }
+
+        .doc-box { background: var(--bg-card); padding: 20px; border-radius: 10px; border-left: 4px solid var(--primary); margin: 20px 0; border: 1px solid #1f2124; }
+        .doc-box p { margin: 0; color: var(--text-light); }
+
+        .badge { background: rgba(88, 101, 242, 0.2); color: var(--primary); padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+
+        pre { background: var(--code-bg); padding: 15px; border-radius: 8px; border: 1px solid #3f4147; overflow-x: auto; margin: 15px 0; }
+        code { font-family: monospace; color: #58ccf2; font-size: 14px; }
+
+        @media (max-width: 768px) {
+            body { flex-direction: column; height: auto; overflow: auto; }
+            .docs-sidebar { width: 100%; height: auto; }
+            .docs-content { padding: 20px; }
+            .config-banner { flex-direction: column; align-items: flex-start; gap: 15px; padding: 25px 20px; }
+            .banner-right { align-items: flex-start; width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR NAVIGATION -->
+    <nav class="docs-sidebar">
+        <a href="/" class="brand">
+            <img src="/user_public/meow-logo.png" onerror="this.src='https://cdn.discordapp.com/embed/avatars/1.png';">
+            Meow Docs v1.9
+        </a>
+
+        <div class="docs-menu-category" data-i18n="cat_start">Bắt đầu</div>
+        <ul class="docs-menu">
+            <li><a href="#" onclick="showDoc('intro', this, 'intro_title')" class="active" data-i18n="menu_intro">Giới thiệu chung</a></li>
+            <li><a href="#" onclick="showDoc('invite', this, 'invite_title')" data-i18n="menu_invite">Mời Bot & Cấu hình</a></li>
+            <li><a href="#" onclick="showDoc('dashboard', this, 'dashboard_title')" data-i18n="menu_dashboard">Sử dụng Web Dashboard</a></li>
+        </ul>
+
+        <div class="docs-menu-category" data-i18n="cat_modules">Discord Modules</div>
+        <ul class="docs-menu">
+            <li><a href="#" onclick="showDoc('ticket', this, 'ticket_title')">🎫 Ticket Module</a></li>
+            <li><a href="#" onclick="showDoc('reaction', this, 'reaction_title')">🎭 Reaction Roles</a></li>
+            <li><a href="#" onclick="showDoc('welcome', this, 'welcome_title')">👋 Welcome & Auto Role</a></li>
+            <li><a href="#" onclick="showDoc('music', this, 'music_title')">🎵 Music Player</a></li>
+            <li><a href="#" onclick="showDoc('automod', this, 'automod_title')">🛡️ Automod & Logging</a></li>
+            <li><a href="#" onclick="showDoc('commands', this, 'commands_title')">⚡ Custom Commands</a></li>
+            <li><a href="#" onclick="showDoc('moderation', this, 'moderation_title')">🛡️ Moderation Suite</a></li>
+            <li><a href="#" onclick="showDoc('sticky', this, 'sticky_title')">📌 Sticky Messages</a></li>
+            <li><a href="#" onclick="showDoc('trigger', this, 'trigger_title')">🤖 Auto-Responder</a></li>
+            <li><a href="#" onclick="showDoc('security', this, 'security_title')">🔐 Backup & Security</a></li>
+            <li><a href="#" onclick="showDoc('nickname', this, 'nickname_title')">🏷️ Nickname Manager</a></li>
+            <li><a href="#" onclick="showDoc('upload', this, 'upload_title')">🖼️ Emoji & Sticker Upload</a></li>
+        </ul>
+
+        <div class="docs-menu-category" data-i18n="cat_economy">Kinh tế & Giải trí</div>
+        <ul class="docs-menu">
+            <li><a href="#" onclick="showDoc('economy', this, 'economy_title')">💰 Economy & Casino</a></li>
+            <li><a href="#" onclick="showDoc('farm', this, 'farm_title')">🌾 Farm System</a></li>
+            <li><a href="#" onclick="showDoc('games', this, 'games_title')">🎮 Games & Leaderboard</a></li>
+            <li><a href="#" onclick="showDoc('fun', this, 'fun_title')">🎉 Fun Commands</a></li>
+        </ul>
+
+        <div class="docs-menu-category" data-i18n="cat_tools">Tiện ích & Dev Tools</div>
+        <ul class="docs-menu">
+            <li><a href="#" onclick="showDoc('tools', this, 'tools_title')">🛠️ AI Gen, Fetch & Obfuscator</a></li>
+            <li><a href="#" onclick="showDoc('roblox', this, 'roblox_title')">🎮 Roblox Avatar & Lookup</a></li>
+            <li><a href="#" onclick="showDoc('bypass', this, 'bypass_title')">🔗 Bypass Link</a></li>
+            <li><a href="#" onclick="showDoc('util', this, 'util_title')">🧰 Server Utilities</a></li>
+            <li><a href="#" onclick="showDoc('ai', this, 'ai_title')">🤖 AI Assistant</a></li>
+            <li><a href="#" onclick="showDoc('confess', this, 'confess_title')">🤫 Confession</a></li>
+            <li><a href="#" onclick="showDoc('premium', this, 'premium_title')">💎 Premium</a></li>
+        </ul>
+    </nav>
+
+    <!-- MAIN DOCUMENTATION CONTENT -->
+    <div class="docs-main">
+        <!-- 🌟 BANNER XANH GRADIENT -->
+        <div class="config-banner">
+            <div>
+                <h1 id="doc-title" data-i18n="intro_title">Giới thiệu chung</h1>
+                <p data-i18n="banner_desc">Tài liệu hướng dẫn chi tiết toàn bộ tính năng và cách sử dụng Meow Bot.</p>
+            </div>
+
+            <div class="banner-right">
+                <a href="dashboardindex.html" class="back-home" data-i18n="back_home">Về trang chủ</a>
+                <div class="lang-switcher">
+                    <button class="lang-btn active" onclick="setLanguage('vi')">🇻🇳 VI</button>
+                    <button class="lang-btn" onclick="setLanguage('en')">🇬🇧 EN</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="docs-content">
+            <!-- 1. GIỚI THIỆU -->
+            <div id="intro" class="doc-section active">
+                <h2 data-i18n="intro_h2">Chào mừng đến với Meow Bot Documentation</h2>
+                <p data-i18n="intro_p1"><strong>Meow Bot</strong> là hệ thống bot Discord All-in-One hiện đại kết hợp Web Dashboard trực quan phiên bản 1.9. Được thiết kế để quản lý toàn diện, tự động hóa máy chủ cộng đồng và tích hợp hàng loạt các tiện ích phát triển cao cấp.</p>
+                <div class="doc-box">
+                    <p>💡 <span data-i18n="intro_tip">Gợi ý: Bạn có thể dễ dàng quản lý mọi tính năng của bot theo thời gian thực trực tiếp tại giao diện</span> <a href="/landing" style="color:var(--primary); text-decoration:none; font-weight:600;">Web Dashboard</a>.</p>
+                </div>
+                <h3 data-i18n="intro_h3">Điểm nổi bật</h3>
+                <p data-i18n="intro_feat1">• Giao diện tối sang trọng chuẩn phong cách Discord (<span class="badge">Dark Theme</span>).</p>
+                <p data-i18n="intro_feat2">• Hỗ trợ đa ngôn ngữ linh hoạt (<span class="badge">Tiếng Việt / English</span>).</p>
+                <p data-i18n="intro_feat3">• Tích hợp bộ công cụ Dev Tool độc quyền ngay trên trang chủ.</p>
+            </div>
+
+            <!-- 2. MỜI BOT -->
+            <div id="invite" class="doc-section">
+                <h2 data-i18n="invite_h2">Mời Bot vào Server</h2>
+                <p data-i18n="invite_p1">Để hệ thống hoạt động hoàn hảo, tài khoản Discord của bạn cần sở hữu quyền <strong>Quản trị viên (Administrator)</strong> trên máy chủ.</p>
+                <p><strong data-i18n="invite_steps_title">Các bước thiết lập:</strong></p>
+                <p data-i18n="invite_step1">1. Truy cập trang chủ và bấm nút <span class="badge">Thêm vào Discord</span>.</p>
+                <p data-i18n="invite_step2">2. Chọn máy chủ muốn tích hợp bot từ danh sách cho phép.</p>
+                <p data-i18n="invite_step3">3. Cấp đầy đủ quyền hạn (Permissions = 8) để bot có thể quản lý kênh, vai trò và tin nhắn.</p>
+            </div>
+
+            <!-- 3. DASHBOARD -->
+            <div id="dashboard" class="doc-section">
+                <h2 data-i18n="dashboard_h2">Sử dụng Web Dashboard</h2>
+                <p data-i18n="dashboard_p1">Giao diện điều khiển trung tâm giúp bạn tinh chỉnh mọi tính năng mà không cần dùng lệnh rườm rà.</p>
+                <p data-i18n="dashboard_p2">Sau khi đăng nhập tài khoản Discord, danh sách các server bạn quản lý sẽ hiển thị trực quan. Server nào chưa có bot sẽ có nút thêm nhanh, server nào đã cài đặt sẽ có nút <span class="badge">Cài đặt Server</span> dẫn đến bảng cấu hình chi tiết.</p>
+            </div>
+
+            <!-- 4. TICKET -->
+            <div id="ticket" class="doc-section">
+                <h2 data-i18n="ticket_title">🎫 Ticket Module</h2>
+                <p data-i18n="ticket_p1">Hệ thống hỗ trợ khách hàng và thành viên chuyên nghiệp:</p>
+                <p>• <strong data-i18n="ticket_l1_title">Kênh Panel:</strong> <span data-i18n="ticket_l1_desc">Chọn kênh hiển thị bảng nút bấm tạo vé hỗ trợ.</span></p>
+                <p>• <strong data-i18n="ticket_l2_title">Support Role:</strong> <span data-i18n="ticket_l2_desc">Chỉ định vai trò nhân viên được phép tiếp nhận và giải quyết ticket.</span></p>
+                <p>• <strong data-i18n="ticket_l3_title">Tùy chỉnh Embed:</strong> <span data-i18n="ticket_l3_desc">Tự do đổi tiêu đề, mô tả, footer và màu viền trực quan bằng mã màu.</span></p>
+            </div>
+
+            <!-- 5. REACTION ROLES -->
+            <div id="reaction" class="doc-section">
+                <h2 data-i18n="reaction_title">🎭 Reaction Roles</h2>
+                <p data-i18n="reaction_p1">Cho phép thành viên tự động nhận vai trò thông qua việc thả cảm xúc (reactions) hoặc bấm nút tương tác vào tin nhắn thông báo, giúp giảm tải công việc cho đội ngũ quản trị.</p>
+            </div>
+
+            <!-- 6. WELCOME -->
+            <div id="welcome" class="doc-section">
+                <h2 data-i18n="welcome_title">👋 Welcome & Auto Role</h2>
+                <p>• <strong data-i18n="welcome_l1_title">Welcome Module:</strong> <span data-i18n="welcome_l1_desc">Gửi tin nhắn chào mừng tự động kèm thẻ tag thành viên mới vào kênh chỉ định.</span></p>
+                <p>• <strong data-i18n="welcome_l2_title">Auto Role:</strong> <span data-i18n="welcome_l2_desc">Tự động cấp ngay một vai trò mặc định an toàn cho bất kỳ thành viên nào vừa gia nhập máy chủ.</span></p>
+            </div>
+
+            <!-- 7. MUSIC -->
+            <div id="music" class="doc-section">
+                <h2 data-i18n="music_title">🎵 Music Player</h2>
+                <p data-i18n="music_p1">Trình phát nhạc chất lượng cao tích hợp trực tiếp trên thanh menu, hỗ trợ hàng chờ mượt mà, độ trễ cực thấp giúp cộng đồng thư giãn trực tiếp trong phòng thoại.</p>
+                <p>• <strong data-i18n="music_l1_title">Điều khiển đầy đủ:</strong> <span data-i18n="music_l1_desc">Phát, tạm dừng, tiếp tục, bỏ qua, dừng hẳn, xáo trộn hàng chờ, và bật/tắt chế độ lặp.</span></p>
+                <p>• <strong data-i18n="music_l2_title">247 Mode:</strong> <span data-i18n="music_l2_desc">Giữ bot ở lại kênh thoại 24/7 để phát nhạc liên tục.</span></p>
+                <p>• <strong data-i18n="music_l3_title">Voice Status:</strong> <span data-i18n="music_l3_desc">Tự động cập nhật trạng thái kênh thoại theo tên bài hát đang phát, hoặc đặt trạng thái tuỳ chỉnh.</span></p>
+                <p>• <strong data-i18n="music_l4_title">Hồ sơ nhạc:</strong> <span data-i18n="music_l4_desc">Xem thẻ thống kê nghe nhạc cá nhân của từng thành viên.</span></p>
+            </div>
+
+            <!-- 8. AUTOMOD & LOGGING -->
+            <div id="automod" class="doc-section">
+                <h2 data-i18n="automod_title">🛡️ Automod & Logging</h2>
+                <p>• <strong data-i18n="automod_l1_title">Automod:</strong> <span data-i18n="automod_l1_desc">Bảo vệ server 24/7 khỏi spam, link độc hại, mention quá mức và từ ngữ nhạy cảm.</span></p>
+                <p>• <strong data-i18n="automod_l2_title">Logging:</strong> <span data-i18n="automod_l2_desc">Ghi nhận mọi sự kiện lịch sử (tin nhắn xóa/sửa, thành viên ra vào, thay đổi vai trò, ban/unban) sang các kênh riêng biệt.</span></p>
+            </div>
+
+            <!-- 9. CUSTOM COMMANDS -->
+            <div id="commands" class="doc-section">
+                <h2 data-i18n="commands_title">⚡ Custom Commands</h2>
+                <p data-i18n="commands_p1">Tự tạo các câu lệnh riêng biệt độc quyền cho máy chủ của bạn bằng cách sử dụng ngôn ngữ kịch bản <strong>TagScript</strong> mạnh mẽ và linh hoạt.</p>
+            </div>
+
+            <!-- 10. MODERATION SUITE -->
+            <div id="moderation" class="doc-section">
+                <h2 data-i18n="moderation_title">🛡️ Moderation Suite</h2>
+                <p data-i18n="moderation_p1">Bộ lệnh kiểm duyệt đầy đủ, hỗ trợ cả xử lý đơn lẻ và hàng loạt (mass action):</p>
+                <p>• <strong data-i18n="moderation_l1_title">Ban / Kick / Mute:</strong> <span data-i18n="moderation_l1_desc">Ban vĩnh viễn, softban, ban tạm thời tự huỷ, kick, mute/timeout — hỗ trợ xử lý nhiều thành viên cùng lúc (mass).</span></p>
+                <p>• <strong data-i18n="moderation_l2_title">Warn System:</strong> <span data-i18n="moderation_l2_desc">Cảnh cáo thành viên, xem lịch sử, và đặt ngưỡng tự động phạt (VD: 3 warn tự động mute).</span></p>
+                <p>• <strong data-i18n="moderation_l3_title">Case Log:</strong> <span data-i18n="moderation_l3_desc">Mọi hành động kiểm duyệt được lưu thành case có ID, có thể tra cứu, sửa lý do, thống kê và xuất file.</span></p>
+                <p>• <strong data-i18n="moderation_l4_title">Channel & Voice Control:</strong> <span data-i18n="moderation_l4_desc">Khoá/mở kênh (kể cả toàn server), slowmode, đổi tên, ẩn/hiện kênh, dọn tin nhắn theo nhiều điều kiện, và quản lý voice (kick, mute, deafen, chuyển kênh hàng loạt).</span></p>
+                <p>• <strong data-i18n="moderation_l5_title">Role & Server Tools:</strong> <span data-i18n="moderation_l5_desc">Gán/gỡ role cho từng người hoặc toàn server, đặt kênh mod-log, đổi nickname hàng loạt, dọn thành viên không hoạt động, và quản lý danh sách từ cấm (blacklist).</span></p>
+                <div class="doc-box">
+                    <p>⚠️ <span data-i18n="moderation_tip">Hầu hết lệnh nhóm này yêu cầu quyền quản trị viên tương ứng (Ban Members, Kick Members, Manage Roles...). Các thao tác hàng loạt (mass) nên dùng thận trọng vì không thể hoàn tác.</span></p>
+                </div>
+            </div>
+
+            <!-- 11. STICKY MESSAGES -->
+            <div id="sticky" class="doc-section">
+                <h2 data-i18n="sticky_title">📌 Sticky Messages</h2>
+                <p data-i18n="sticky_p1">Ghim một tin nhắn "sống" luôn ở cuối kênh — mỗi khi có tin nhắn mới, bot sẽ tự động gửi lại nội dung sticky để nó luôn hiển thị bên dưới cùng. Có thể tạo, cập nhật, xoá hoặc xem danh sách toàn bộ kênh đang bật sticky.</p>
+            </div>
+
+            <!-- 12. AUTO-RESPONDER / TRIGGER -->
+            <div id="trigger" class="doc-section">
+                <h2 data-i18n="trigger_title">🤖 Auto-Responder (Trigger)</h2>
+                <p data-i18n="trigger_p1">Tạo phản hồi tự động khi thành viên gõ một từ khoá nhất định. Hỗ trợ 4 kiểu khớp: <span class="badge">exact</span> (chính xác), <span class="badge">includes</span> (chứa từ khoá), <span class="badge">startswith</span> (bắt đầu bằng) và <span class="badge">regex</span> (biểu thức chính quy) cho nhu cầu nâng cao. Có thể thêm, xoá và liệt kê toàn bộ trigger đang hoạt động trên server.</p>
+            </div>
+
+            <!-- 13. BACKUP & SECURITY -->
+            <div id="security" class="doc-section">
+                <h2 data-i18n="security_title">🔐 Backup & Security</h2>
+                <p>• <strong data-i18n="security_l1_title">Server Backup:</strong> <span data-i18n="security_l1_desc">Tạo file backup mã hoá chứa toàn bộ role, category, kênh và phân quyền của server; có thể khôi phục lại layout từ file này bất cứ lúc nào (chỉ chủ server mới được restore).</span></p>
+                <p>• <strong data-i18n="security_l2_title">HoneyPot:</strong> <span data-i18n="security_l2_desc">Tạo một kênh "bẫy" — bất kỳ ai (thường là bot spam/raid) nhắn tin vào đó sẽ bị tự động ban ngay lập tức.</span></p>
+                <p>• <strong data-i18n="security_l3_title">Mass Manager Dashboard:</strong> <span data-i18n="security_l3_desc">Bảng điều khiển kiểm tra sức khoẻ server: rà soát role có quyền Administrator, số lượng kênh, role rác không dùng, xung đột bot, và các quyền quan trọng bot đang thiếu.</span></p>
+            </div>
+
+            <!-- 14. NICKNAME MANAGER -->
+            <div id="nickname" class="doc-section">
+                <h2 data-i18n="nickname_title">🏷️ Nickname Manager</h2>
+                <p data-i18n="nickname_p1">Gắn thêm hậu tố (suffix) vào biệt danh của toàn bộ thành viên cùng lúc (ví dụ thêm tag sự kiện), hoặc reset toàn bộ nickname về mặc định. Có bảng điều khiển tương tác riêng để thao tác nhanh hơn.</p>
+            </div>
+
+            <!-- 15. EMOJI & STICKER UPLOAD -->
+            <div id="upload" class="doc-section">
+                <h2 data-i18n="upload_title">🖼️ Emoji & Sticker Upload</h2>
+                <p data-i18n="upload_p1">Tải ảnh hoặc GIF lên thẳng thành emoji hoặc sticker tuỳ chỉnh cho server, không cần vào Server Settings thủ công. Hỗ trợ đặt tên, tag gợi ý và mô tả ngắn cho sticker.</p>
+            </div>
+
+            <!-- 16. ECONOMY & CASINO -->
+            <div id="economy" class="doc-section">
+                <h2 data-i18n="economy_title">💰 Economy & Casino</h2>
+                <p data-i18n="economy_p1">Hệ thống tiền tệ ảo <strong>Ncoin</strong> cho toàn server:</p>
+                <p>• <strong data-i18n="economy_l1_title">Economy cơ bản:</strong> <span data-i18n="economy_l1_desc">Xem số dư, điểm danh nhận thưởng hàng ngày, mua vật phẩm/chip auto-farm trong shop, bán đồ trong túi, chuyển Ncoin cho người khác, xem/đổi giftcode.</span></p>
+                <p>• <strong data-i18n="economy_l2_title">Casino minigame:</strong> <span data-i18n="economy_l2_desc">Bầu Cua Tôm Cá, Tài Xỉu nhanh, High-Low, Minesweeper cược Ncoin, và thách đấu Blackjack 1v1 với thành viên khác.</span></p>
+                <div class="doc-box">
+                    <p>💡 <span data-i18n="economy_tip">Tất cả đều dùng tiền ảo Ncoin trong game, không liên quan đến tiền thật.</span></p>
+                </div>
+            </div>
+
+            <!-- 17. FARM SYSTEM -->
+            <div id="farm" class="doc-section">
+                <h2 data-i18n="farm_title">🌾 Farm System</h2>
+                <p data-i18n="farm_p1">Hệ thống săn bắn / câu cá / đào khoáng để kiếm Ncoin và vật phẩm. Có thể chơi thủ công từng lượt, hoặc bật chế độ tự động (auto-hunt/fish/mining trong 1 giờ, tiêu tốn chip tương ứng). Ngoài ra có thể xem kho vũ khí, bộ sưu tập động vật đã săn, và mở lootbox để nhận thưởng ngẫu nhiên.</p>
+            </div>
+
+            <!-- 18. GAMES & LEADERBOARD -->
+            <div id="games" class="doc-section">
+                <h2 data-i18n="games_title">🎮 Games & Leaderboard</h2>
+                <p>• <strong data-i18n="games_l1_title">Minigame chung kênh:</strong> <span data-i18n="games_l1_desc">Đoán số bí mật (1-100) và nối từ tiếng Việt — cả kênh cùng chơi chung một ván.</span></p>
+                <p>• <strong data-i18n="games_l2_title">Bảng xếp hạng:</strong> <span data-i18n="games_l2_desc">Xếp hạng theo Ncoin, số động vật săn được, cá câu được, quặng đào được, và cấp độ/kinh nghiệm (level & XP) của từng thành viên.</span></p>
+            </div>
+
+            <!-- 19. FUN COMMANDS -->
+            <div id="fun" class="doc-section">
+                <h2 data-i18n="fun_title">🎉 Fun Commands</h2>
+                <p data-i18n="fun_p1">Loạt lệnh giải trí nhẹ nhàng: hỏi đáp 8-ball, ảnh mèo/chó ngẫu nhiên, fact thú vị, joke, meme từ Reddit, ảnh waifu, tính độ hợp (ship) giữa hai thành viên, Thật hay Thách (Truth or Dare), và Oẳn tù tì (Rock-Paper-Scissors).</p>
+            </div>
+
+            <!-- 20. TOOLS -->
+            <div id="tools" class="doc-section">
+                <h2 data-i18n="tools_title">🛠️ Tiện ích Phát triển (Dev Tools)</h2>
+                <p data-i18n="tools_p1">Meow Bot tích hợp sẵn các công cụ hỗ trợ lập trình viên ngay trên giao diện Landing Page:</p>
+                <p>• <strong data-i18n="tools_l1_title">🤖 AI Gen Script:</strong> <span data-i18n="tools_l1_desc">Tạo nhanh mã lệnh tự động thông minh.</span></p>
+                <p>• <strong data-i18n="tools_l2_title">🌐 Fetch Client:</strong> <span data-i18n="tools_l2_desc">Kiểm tra yêu cầu mạng, phản hồi API nhanh chóng.</span></p>
+                <p>• <strong data-i18n="tools_l3_title">🔒 Code Obfuscator:</strong> <span data-i18n="tools_l3_desc">Mã hóa và bảo vệ mã nguồn an toàn.</span></p>
+                <p>• <strong data-i18n="tools_l4_title">🔓 Deobfuscator:</strong> <span data-i18n="tools_l4_desc">Giải mã các đoạn mã bị ẩn hoặc bị khóa.</span></p>
+                <p>• <strong data-i18n="tools_l5_title">🎯 User Sniper:</strong> <span data-i18n="tools_l5_desc">Theo dõi và trích xuất thông tin người dùng chính xác.</span></p>
+            </div>
+
+            <!-- 21. ROBLOX -->
+            <div id="roblox" class="doc-section">
+                <h2 data-i18n="roblox_title">🎮 Roblox Avatar & User Lookup</h2>
+                <p data-i18n="roblox_p1">Công cụ tra cứu thông tin tài khoản người dùng Roblox, lấy ID, kiểm tra trạng thái và tải ảnh đại diện nhân vật (<span class="badge">Roblox Avatar</span>) chất lượng cao chỉ với vài thao tác.</p>
+            </div>
+
+            <!-- 22. BYPASS -->
+            <div id="bypass" class="doc-section">
+                <h2 data-i18n="bypass_title">🔗 Bypass Link</h2>
+                <p data-i18n="bypass_p1">Tiện ích hỗ trợ người dùng vượt qua các liên kết rút gọn, chuyển hướng rườm rà để lấy link đích gốc một cách an toàn và nhanh chóng.</p>
+            </div>
+
+            <!-- 23. SERVER UTILITIES -->
+            <div id="util" class="doc-section">
+                <h2 data-i18n="util_title">🧰 Server Utilities</h2>
+                <p data-i18n="util_p1">Các lệnh tiện ích chung: xem thông tin chi tiết server, đặt trạng thái AFK, xem log cập nhật hệ thống và Điều khoản dịch vụ, xem lại tin nhắn vừa bị xoá trong kênh (snipe), dịch văn bản sang ngôn ngữ khác, và tìm video TikTok theo từ khoá/hashtag.</p>
+            </div>
+
+            <!-- 24. AI ASSISTANT -->
+            <div id="ai" class="doc-section">
+                <h2 data-i18n="ai_title">🤖 AI Assistant</h2>
+                <p data-i18n="ai_p1">Trò chuyện trực tiếp với trợ lý AI của Meow Bot ngay trong Discord — đặt câu hỏi và nhận câu trả lời tức thì mà không cần rời khỏi server.</p>
+            </div>
+
+            <!-- 25. CONFESSION -->
+            <div id="confess" class="doc-section">
+                <h2 data-i18n="confess_title">🤫 Confession</h2>
+                <p data-i18n="confess_p1">Gửi tâm sự/thú nhận ẩn danh đến kênh review của server — danh tính người gửi không bị hiển thị công khai.</p>
+            </div>
+
+            <!-- 26. PREMIUM -->
+            <div id="premium" class="doc-section">
+                <h2 data-i18n="premium_title">💎 Premium</h2>
+                <p data-i18n="premium_p1">Các tính năng nâng cao dành cho server đã nâng cấp Premium:</p>
+                <p>• <strong data-i18n="premium_l1_title">Auto-Bypass Link:</strong> <span data-i18n="premium_l1_desc">Tự động bỏ qua các link rút gọn/key-system trong kênh được chỉ định.</span></p>
+                <p>• <strong data-i18n="premium_l2_title">AI Automod:</strong> <span data-i18n="premium_l2_desc">Bật kiểm duyệt nội dung thông minh bằng AI cho server.</span></p>
+                <p>• <strong data-i18n="premium_l3_title">Branding tuỳ chỉnh:</strong> <span data-i18n="premium_l3_desc">Đặt avatar thương hiệu riêng và prefix lệnh tuỳ chỉnh cho bot trên server của bạn.</span></p>
+                <p>• <strong data-i18n="premium_l4_title">Kiểm tra trạng thái:</strong> <span data-i18n="premium_l4_desc">Xem server hiện có đang là Premium hay không bằng lệnh premiumstatus.</span></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const translations = {
+            vi: {
+                cat_start: "Bắt đầu",
+                cat_modules: "Discord Modules",
+                cat_economy: "Kinh tế & Giải trí",
+                cat_tools: "Tiện ích & Dev Tools",
+                menu_intro: "Giới thiệu chung",
+                menu_invite: "Mời Bot & Cấu hình",
+                menu_dashboard: "Sử dụng Web Dashboard",
+                banner_desc: "Tài liệu hướng dẫn chi tiết toàn bộ tính năng và cách sử dụng Meow Bot.",
+                back_home: "Về trang chủ",
+
+                intro_title: "Giới thiệu chung",
+                intro_h2: "Chào mừng đến với Meow Bot Documentation",
+                intro_p1: "<strong>Meow Bot</strong> là hệ thống bot Discord All-in-One hiện đại kết hợp Web Dashboard trực quan phiên bản 1.9. Được thiết kế để quản lý toàn diện, tự động hóa máy chủ cộng đồng và tích hợp hàng loạt các tiện ích phát triển cao cấp.",
+                intro_tip: "Gợi ý: Bạn có thể dễ dàng quản lý mọi tính năng của bot theo thời gian thực trực tiếp tại giao diện",
+                intro_h3: "Điểm nổi bật",
+                intro_feat1: "• Giao diện tối sang trọng chuẩn phong cách Discord (<span class=\"badge\">Dark Theme</span>).",
+                intro_feat2: "• Hỗ trợ đa ngôn ngữ linh hoạt (<span class=\"badge\">Tiếng Việt / English</span>).",
+                intro_feat3: "• Tích hợp bộ công cụ Dev Tool độc quyền ngay trên trang chủ.",
+
+                invite_title: "Mời Bot & Cấu hình",
+                invite_h2: "Mời Bot vào Server",
+                invite_p1: "Để hệ thống hoạt động hoàn hảo, tài khoản Discord của bạn cần sở hữu quyền <strong>Quản trị viên (Administrator)</strong> trên máy chủ.",
+                invite_steps_title: "Các bước thiết lập:",
+                invite_step1: "1. Truy cập trang chủ và bấm nút <span class=\"badge\">Thêm vào Discord</span>.",
+                invite_step2: "2. Chọn máy chủ muốn tích hợp bot từ danh sách cho phép.",
+                invite_step3: "3. Cấp đầy đủ quyền hạn (Permissions = 8) để bot có thể quản lý kênh, vai trò và tin nhắn.",
+
+                dashboard_title: "Sử dụng Web Dashboard",
+                dashboard_h2: "Sử dụng Web Dashboard",
+                dashboard_p1: "Giao diện điều khiển trung tâm giúp bạn tinh chỉnh mọi tính năng mà không cần dùng lệnh rườm rà.",
+                dashboard_p2: "Sau khi đăng nhập tài khoản Discord, danh sách các server bạn quản lý sẽ hiển thị trực quan. Server nào chưa có bot sẽ có nút thêm nhanh, server nào đã cài đặt sẽ có nút <span class=\"badge\">Cài đặt Server</span> dẫn đến bảng cấu hình chi tiết.",
+
+                ticket_title: "Ticket Module",
+                ticket_p1: "Hệ thống hỗ trợ khách hàng và thành viên chuyên nghiệp:",
+                ticket_l1_title: "Kênh Panel:",
+                ticket_l1_desc: "Chọn kênh hiển thị bảng nút bấm tạo vé hỗ trợ.",
+                ticket_l2_title: "Support Role:",
+                ticket_l2_desc: "Chỉ định vai trò nhân viên được phép tiếp nhận và giải quyết ticket.",
+                ticket_l3_title: "Tùy chỉnh Embed:",
+                ticket_l3_desc: "Tự do đổi tiêu đề, mô tả, footer và màu viền trực quan bằng mã màu.",
+
+                reaction_title: "Reaction Roles",
+                reaction_p1: "Cho phép thành viên tự động nhận vai trò thông qua việc thả cảm xúc (reactions) hoặc bấm nút tương tác vào tin nhắn thông báo, giúp giảm tải công việc cho đội ngũ quản trị.",
+
+                welcome_title: "Welcome & Auto Role",
+                welcome_l1_title: "Welcome Module:",
+                welcome_l1_desc: "Gửi tin nhắn chào mừng tự động kèm thẻ tag thành viên mới vào kênh chỉ định.",
+                welcome_l2_title: "Auto Role:",
+                welcome_l2_desc: "Tự động cấp ngay một vai trò mặc định an toàn cho bất kỳ thành viên nào vừa gia nhập máy chủ.",
+
+                music_title: "Music Player",
+                music_p1: "Trình phát nhạc chất lượng cao tích hợp trực tiếp trên thanh menu, hỗ trợ hàng chờ mượt mà, độ trễ cực thấp giúp cộng đồng thư giãn trực tiếp trong phòng thoại.",
+                music_l1_title: "Điều khiển đầy đủ:",
+                music_l1_desc: "Phát, tạm dừng, tiếp tục, bỏ qua, dừng hẳn, xáo trộn hàng chờ, và bật/tắt chế độ lặp.",
+                music_l2_title: "247 Mode:",
+                music_l2_desc: "Giữ bot ở lại kênh thoại 24/7 để phát nhạc liên tục.",
+                music_l3_title: "Voice Status:",
+                music_l3_desc: "Tự động cập nhật trạng thái kênh thoại theo tên bài hát đang phát, hoặc đặt trạng thái tuỳ chỉnh.",
+                music_l4_title: "Hồ sơ nhạc:",
+                music_l4_desc: "Xem thẻ thống kê nghe nhạc cá nhân của từng thành viên.",
+
+                automod_title: "Automod & Logging",
+                automod_l1_title: "Automod:",
+                automod_l1_desc: "Bảo vệ server 24/7 khỏi spam, link độc hại, mention quá mức và từ ngữ nhạy cảm.",
+                automod_l2_title: "Logging:",
+                automod_l2_desc: "Ghi nhận mọi sự kiện lịch sử (tin nhắn xóa/sửa, thành viên ra vào, thay đổi vai trò, ban/unban) sang các kênh riêng biệt.",
+
+                commands_title: "Custom Commands",
+                commands_p1: "Tự tạo các câu lệnh riêng biệt độc quyền cho máy chủ của bạn bằng cách sử dụng ngôn ngữ kịch bản TagScript mạnh mẽ và linh hoạt.",
+
+                moderation_title: "Moderation Suite",
+                moderation_p1: "Bộ lệnh kiểm duyệt đầy đủ, hỗ trợ cả xử lý đơn lẻ và hàng loạt (mass action):",
+                moderation_l1_title: "Ban / Kick / Mute:",
+                moderation_l1_desc: "Ban vĩnh viễn, softban, ban tạm thời tự huỷ, kick, mute/timeout — hỗ trợ xử lý nhiều thành viên cùng lúc (mass).",
+                moderation_l2_title: "Warn System:",
+                moderation_l2_desc: "Cảnh cáo thành viên, xem lịch sử, và đặt ngưỡng tự động phạt (VD: 3 warn tự động mute).",
+                moderation_l3_title: "Case Log:",
+                moderation_l3_desc: "Mọi hành động kiểm duyệt được lưu thành case có ID, có thể tra cứu, sửa lý do, thống kê và xuất file.",
+                moderation_l4_title: "Channel & Voice Control:",
+                moderation_l4_desc: "Khoá/mở kênh (kể cả toàn server), slowmode, đổi tên, ẩn/hiện kênh, dọn tin nhắn theo nhiều điều kiện, và quản lý voice (kick, mute, deafen, chuyển kênh hàng loạt).",
+                moderation_l5_title: "Role & Server Tools:",
+                moderation_l5_desc: "Gán/gỡ role cho từng người hoặc toàn server, đặt kênh mod-log, đổi nickname hàng loạt, dọn thành viên không hoạt động, và quản lý danh sách từ cấm (blacklist).",
+                moderation_tip: "Hầu hết lệnh nhóm này yêu cầu quyền quản trị viên tương ứng (Ban Members, Kick Members, Manage Roles...). Các thao tác hàng loạt (mass) nên dùng thận trọng vì không thể hoàn tác.",
+
+                sticky_title: "Sticky Messages",
+                sticky_p1: "Ghim một tin nhắn \"sống\" luôn ở cuối kênh — mỗi khi có tin nhắn mới, bot sẽ tự động gửi lại nội dung sticky để nó luôn hiển thị bên dưới cùng. Có thể tạo, cập nhật, xoá hoặc xem danh sách toàn bộ kênh đang bật sticky.",
+
+                trigger_title: "Auto-Responder",
+                trigger_p1: "Tạo phản hồi tự động khi thành viên gõ một từ khoá nhất định. Hỗ trợ 4 kiểu khớp: <span class=\"badge\">exact</span> (chính xác), <span class=\"badge\">includes</span> (chứa từ khoá), <span class=\"badge\">startswith</span> (bắt đầu bằng) và <span class=\"badge\">regex</span> (biểu thức chính quy) cho nhu cầu nâng cao. Có thể thêm, xoá và liệt kê toàn bộ trigger đang hoạt động trên server.",
+
+                security_title: "Backup & Security",
+                security_l1_title: "Server Backup:",
+                security_l1_desc: "Tạo file backup mã hoá chứa toàn bộ role, category, kênh và phân quyền của server; có thể khôi phục lại layout từ file này bất cứ lúc nào (chỉ chủ server mới được restore).",
+                security_l2_title: "HoneyPot:",
+                security_l2_desc: "Tạo một kênh \"bẫy\" — bất kỳ ai (thường là bot spam/raid) nhắn tin vào đó sẽ bị tự động ban ngay lập tức.",
+                security_l3_title: "Mass Manager Dashboard:",
+                security_l3_desc: "Bảng điều khiển kiểm tra sức khoẻ server: rà soát role có quyền Administrator, số lượng kênh, role rác không dùng, xung đột bot, và các quyền quan trọng bot đang thiếu.",
+
+                nickname_title: "Nickname Manager",
+                nickname_p1: "Gắn thêm hậu tố (suffix) vào biệt danh của toàn bộ thành viên cùng lúc (ví dụ thêm tag sự kiện), hoặc reset toàn bộ nickname về mặc định. Có bảng điều khiển tương tác riêng để thao tác nhanh hơn.",
+
+                upload_title: "Emoji & Sticker Upload",
+                upload_p1: "Tải ảnh hoặc GIF lên thẳng thành emoji hoặc sticker tuỳ chỉnh cho server, không cần vào Server Settings thủ công. Hỗ trợ đặt tên, tag gợi ý và mô tả ngắn cho sticker.",
+
+                economy_title: "Economy & Casino",
+                economy_p1: "Hệ thống tiền tệ ảo <strong>Ncoin</strong> cho toàn server:",
+                economy_l1_title: "Economy cơ bản:",
+                economy_l1_desc: "Xem số dư, điểm danh nhận thưởng hàng ngày, mua vật phẩm/chip auto-farm trong shop, bán đồ trong túi, chuyển Ncoin cho người khác, xem/đổi giftcode.",
+                economy_l2_title: "Casino minigame:",
+                economy_l2_desc: "Bầu Cua Tôm Cá, Tài Xỉu nhanh, High-Low, Minesweeper cược Ncoin, và thách đấu Blackjack 1v1 với thành viên khác.",
+                economy_tip: "Tất cả đều dùng tiền ảo Ncoin trong game, không liên quan đến tiền thật.",
+
+                farm_title: "Farm System",
+                farm_p1: "Hệ thống săn bắn / câu cá / đào khoáng để kiếm Ncoin và vật phẩm. Có thể chơi thủ công từng lượt, hoặc bật chế độ tự động (auto-hunt/fish/mining trong 1 giờ, tiêu tốn chip tương ứng). Ngoài ra có thể xem kho vũ khí, bộ sưu tập động vật đã săn, và mở lootbox để nhận thưởng ngẫu nhiên.",
+
+                games_title: "Games & Leaderboard",
+                games_l1_title: "Minigame chung kênh:",
+                games_l1_desc: "Đoán số bí mật (1-100) và nối từ tiếng Việt — cả kênh cùng chơi chung một ván.",
+                games_l2_title: "Bảng xếp hạng:",
+                games_l2_desc: "Xếp hạng theo Ncoin, số động vật săn được, cá câu được, quặng đào được, và cấp độ/kinh nghiệm (level & XP) của từng thành viên.",
+
+                fun_title: "Fun Commands",
+                fun_p1: "Loạt lệnh giải trí nhẹ nhàng: hỏi đáp 8-ball, ảnh mèo/chó ngẫu nhiên, fact thú vị, joke, meme từ Reddit, ảnh waifu, tính độ hợp (ship) giữa hai thành viên, Thật hay Thách (Truth or Dare), và Oẳn tù tì (Rock-Paper-Scissors).",
+
+                tools_title: "Tiện ích Phát triển (Dev Tools)",
+                tools_p1: "Meow Bot tích hợp sẵn các công cụ hỗ trợ lập trình viên ngay trên giao diện Landing Page:",
+                tools_l1_title: "🤖 AI Gen Script:",
+                tools_l1_desc: "Tạo nhanh mã lệnh tự động thông minh.",
+                tools_l2_title: "🌐 Fetch Client:",
+                tools_l2_desc: "Kiểm tra yêu cầu mạng, phản hồi API nhanh chóng.",
+                tools_l3_title: "🔒 Code Obfuscator:",
+                tools_l3_desc: "Mã hóa và bảo vệ mã nguồn an toàn.",
+                tools_l4_title: "🔓 Deobfuscator:",
+                tools_l4_desc: "Giải mã các đoạn mã bị ẩn hoặc bị khóa.",
+                tools_l5_title: "🎯 User Sniper:",
+                tools_l5_desc: "Theo dõi và trích xuất thông tin người dùng chính xác.",
+
+                roblox_title: "Roblox Avatar & User Lookup",
+                roblox_p1: "Công cụ tra cứu thông tin tài khoản người dùng Roblox, lấy ID, kiểm tra trạng thái và tải ảnh đại diện nhân vật (<span class=\"badge\">Roblox Avatar</span>) chất lượng cao chỉ với vài thao tác.",
+
+                bypass_title: "Bypass Link",
+                bypass_p1: "Tiện ích hỗ trợ người dùng vượt qua các liên kết rút gọn, chuyển hướng rườm rà để lấy link đích gốc một cách an toàn và nhanh chóng.",
+
+                util_title: "Server Utilities",
+                util_p1: "Các lệnh tiện ích chung: xem thông tin chi tiết server, đặt trạng thái AFK, xem log cập nhật hệ thống và Điều khoản dịch vụ, xem lại tin nhắn vừa bị xoá trong kênh (snipe), dịch văn bản sang ngôn ngữ khác, và tìm video TikTok theo từ khoá/hashtag.",
+
+                ai_title: "AI Assistant",
+                ai_p1: "Trò chuyện trực tiếp với trợ lý AI của Meow Bot ngay trong Discord — đặt câu hỏi và nhận câu trả lời tức thì mà không cần rời khỏi server.",
+
+                confess_title: "Confession",
+                confess_p1: "Gửi tâm sự/thú nhận ẩn danh đến kênh review của server — danh tính người gửi không bị hiển thị công khai.",
+
+                premium_title: "Premium",
+                premium_p1: "Các tính năng nâng cao dành cho server đã nâng cấp Premium:",
+                premium_l1_title: "Auto-Bypass Link:",
+                premium_l1_desc: "Tự động bỏ qua các link rút gọn/key-system trong kênh được chỉ định.",
+                premium_l2_title: "AI Automod:",
+                premium_l2_desc: "Bật kiểm duyệt nội dung thông minh bằng AI cho server.",
+                premium_l3_title: "Branding tuỳ chỉnh:",
+                premium_l3_desc: "Đặt avatar thương hiệu riêng và prefix lệnh tuỳ chỉnh cho bot trên server của bạn.",
+                premium_l4_title: "Kiểm tra trạng thái:",
+                premium_l4_desc: "Xem server hiện có đang là Premium hay không bằng lệnh premiumstatus."
+            },
+            en: {
+                cat_start: "Getting Started",
+                cat_modules: "Discord Modules",
+                cat_economy: "Economy & Fun",
+                cat_tools: "Utilities & Dev Tools",
+                menu_intro: "Overview",
+                menu_invite: "Invite Bot & Setup",
+                menu_dashboard: "Using the Web Dashboard",
+                banner_desc: "Detailed documentation for every feature and how to use Meow Bot.",
+                back_home: "Back to Home",
+
+                intro_title: "Overview",
+                intro_h2: "Welcome to Meow Bot Documentation",
+                intro_p1: "<strong>Meow Bot</strong> is a modern All-in-One Discord bot paired with an intuitive Web Dashboard, version 1.9. Built for comprehensive management, community server automation, and a large set of premium developer utilities.",
+                intro_tip: "Tip: You can easily manage every bot feature in real time directly from the",
+                intro_h3: "Highlights",
+                intro_feat1: "• Sleek dark UI matching Discord's own style (<span class=\"badge\">Dark Theme</span>).",
+                intro_feat2: "• Flexible multi-language support (<span class=\"badge\">Vietnamese / English</span>).",
+                intro_feat3: "• Exclusive Dev Tools built right into the landing page.",
+
+                invite_title: "Invite Bot & Setup",
+                invite_h2: "Inviting the Bot to Your Server",
+                invite_p1: "For everything to work perfectly, your Discord account needs <strong>Administrator</strong> permission on the server.",
+                invite_steps_title: "Setup steps:",
+                invite_step1: "1. Go to the homepage and click <span class=\"badge\">Add to Discord</span>.",
+                invite_step2: "2. Choose the server you want to add the bot to from the allowed list.",
+                invite_step3: "3. Grant full permissions (Permissions = 8) so the bot can manage channels, roles, and messages.",
+
+                dashboard_title: "Using the Web Dashboard",
+                dashboard_h2: "Using the Web Dashboard",
+                dashboard_p1: "A central control panel that lets you fine-tune every feature without typing lengthy commands.",
+                dashboard_p2: "After logging in with Discord, the servers you manage are shown clearly. Servers without the bot get a quick-add button; servers that already have it show a <span class=\"badge\">Server Settings</span> button leading to the detailed configuration panel.",
+
+                ticket_title: "Ticket Module",
+                ticket_p1: "A professional support system for customers and members:",
+                ticket_l1_title: "Panel Channel:",
+                ticket_l1_desc: "Choose the channel that displays the ticket-creation button panel.",
+                ticket_l2_title: "Support Role:",
+                ticket_l2_desc: "Assign the staff role allowed to pick up and resolve tickets.",
+                ticket_l3_title: "Embed Customization:",
+                ticket_l3_desc: "Freely change the title, description, footer, and border color code.",
+
+                reaction_title: "Reaction Roles",
+                reaction_p1: "Lets members automatically get a role by adding a reaction or clicking a button on an announcement message, reducing the workload for the admin team.",
+
+                welcome_title: "Welcome & Auto Role",
+                welcome_l1_title: "Welcome Module:",
+                welcome_l1_desc: "Automatically sends a welcome message tagging new members in the designated channel.",
+                welcome_l2_title: "Auto Role:",
+                welcome_l2_desc: "Instantly grants a safe default role to any member who just joined the server.",
+
+                music_title: "Music Player",
+                music_p1: "A high-quality music player built directly into the menu bar, with smooth queueing and very low latency so the community can relax together in voice channels.",
+                music_l1_title: "Full playback controls:",
+                music_l1_desc: "Play, pause, resume, skip, stop, shuffle the queue, and toggle loop mode.",
+                music_l2_title: "247 Mode:",
+                music_l2_desc: "Keeps the bot in the voice channel 24/7 for continuous playback.",
+                music_l3_title: "Voice Status:",
+                music_l3_desc: "Automatically updates the voice channel status with the currently playing track, or sets a custom status.",
+                music_l4_title: "Music Profile:",
+                music_l4_desc: "View a personal listening-stats card for each member.",
+
+                automod_title: "Automod & Logging",
+                automod_l1_title: "Automod:",
+                automod_l1_desc: "Protects the server 24/7 from spam, malicious links, excessive mentions, and sensitive language.",
+                automod_l2_title: "Logging:",
+                automod_l2_desc: "Records every historical event (deleted/edited messages, members joining/leaving, role changes, ban/unban) to separate log channels.",
+
+                commands_title: "Custom Commands",
+                commands_p1: "Create your own server-exclusive commands using the powerful and flexible <strong>TagScript</strong> scripting language.",
+
+                moderation_title: "Moderation Suite",
+                moderation_p1: "A complete moderation command set, supporting both single-target and mass actions:",
+                moderation_l1_title: "Ban / Kick / Mute:",
+                moderation_l1_desc: "Permanent ban, softban, self-expiring temp ban, kick, mute/timeout — with mass actions for multiple members at once.",
+                moderation_l2_title: "Warn System:",
+                moderation_l2_desc: "Warn members, view history, and set auto-punishment thresholds (e.g. 3 warnings auto-mutes).",
+                moderation_l3_title: "Case Log:",
+                moderation_l3_desc: "Every moderation action is saved as a numbered case that can be looked up, edited, searched, exported, and shown in stats.",
+                moderation_l4_title: "Channel & Voice Control:",
+                moderation_l4_desc: "Lock/unlock channels (including server-wide), slowmode, rename, show/hide channels, purge messages by several filters, and manage voice (kick, mute, deafen, mass-move members).",
+                moderation_l5_title: "Role & Server Tools:",
+                moderation_l5_desc: "Give/remove roles to individuals or the whole server, set the mod-log channel, mass-edit nicknames, prune inactive members, and manage the word blacklist.",
+                moderation_tip: "Most commands in this group need the matching permission (Ban Members, Kick Members, Manage Roles...). Use mass actions carefully — they cannot be undone.",
+
+                sticky_title: "Sticky Messages",
+                sticky_p1: "Pins a \"living\" message that always stays at the bottom of a channel — whenever a new message comes in, the bot re-sends the sticky content so it keeps showing at the bottom. You can create, update, remove, or list every channel with an active sticky.",
+
+                trigger_title: "Auto-Responder",
+                trigger_p1: "Create automatic responses when a member types a certain keyword. Supports 4 match types: <span class=\"badge\">exact</span>, <span class=\"badge\">includes</span>, <span class=\"badge\">startswith</span>, and <span class=\"badge\">regex</span> for advanced needs. Triggers can be added, deleted, and listed for the server.",
+
+                security_title: "Backup & Security",
+                security_l1_title: "Server Backup:",
+                security_l1_desc: "Creates an encrypted backup file containing all roles, categories, channels, and permissions; can restore the layout from that file at any time (owner-only restore).",
+                security_l2_title: "HoneyPot:",
+                security_l2_desc: "Creates a trap channel — anyone (usually a spam/raid bot) that sends a message there gets instantly banned.",
+                security_l3_title: "Mass Manager Dashboard:",
+                security_l3_desc: "A health-check dashboard: scans for Administrator roles, channel counts, unused roles, bot conflicts, and missing critical bot permissions.",
+
+                nickname_title: "Nickname Manager",
+                nickname_p1: "Appends a suffix to every member's nickname at once (e.g. an event tag), or resets all nicknames back to default. Includes an interactive control panel for faster use.",
+
+                upload_title: "Emoji & Sticker Upload",
+                upload_p1: "Upload an image or GIF straight into a custom server emoji or sticker, no need to open Server Settings manually. Supports naming, suggested tags, and a short description for stickers.",
+
+                economy_title: "Economy & Casino",
+                economy_p1: "A server-wide virtual currency system called <strong>Ncoin</strong>:",
+                economy_l1_title: "Core economy:",
+                economy_l1_desc: "Check balance, claim daily rewards, buy items/auto-farm chips in the shop, sell inventory items, transfer Ncoin to others, view/redeem gift codes.",
+                economy_l2_title: "Casino minigames:",
+                economy_l2_desc: "Bầu Cua (dice), quick Tài Xỉu, High-Low, Minesweeper betting, and 1v1 Blackjack challenges against other members.",
+                economy_tip: "Everything uses in-game virtual Ncoin — not real money.",
+
+                farm_title: "Farm System",
+                farm_p1: "A hunting / fishing / mining system to earn Ncoin and items. Play manually turn-by-turn, or enable auto mode (auto-hunt/fish/mining for 1 hour, consuming the matching chip). You can also view your weapon inventory, animal collection, and open lootboxes for random rewards.",
+
+                games_title: "Games & Leaderboard",
+                games_l1_title: "Shared-channel minigames:",
+                games_l1_desc: "Guess-the-secret-number (1-100) and a Vietnamese word-chain game — the whole channel plays one shared round.",
+                games_l2_title: "Leaderboards:",
+                games_l2_desc: "Rankings by Ncoin, animals hunted, fish caught, ore mined, and each member's level/XP.",
+
+                fun_title: "Fun Commands",
+                fun_p1: "A set of light entertainment commands: 8-ball, random cat/dog images, interesting facts, jokes, Reddit memes, waifu images, ship compatibility between two members, Truth or Dare, and Rock-Paper-Scissors.",
+
+                tools_title: "Developer Tools",
+                tools_p1: "Meow Bot ships with built-in developer utilities right on the Landing Page:",
+                tools_l1_title: "🤖 AI Gen Script:",
+                tools_l1_desc: "Quickly generate smart automation code.",
+                tools_l2_title: "🌐 Fetch Client:",
+                tools_l2_desc: "Quickly test network requests and API responses.",
+                tools_l3_title: "🔒 Code Obfuscator:",
+                tools_l3_desc: "Encode and protect source code.",
+                tools_l4_title: "🔓 Deobfuscator:",
+                tools_l4_desc: "Decode hidden or locked code snippets.",
+                tools_l5_title: "🎯 User Sniper:",
+                tools_l5_desc: "Track and extract user information precisely.",
+
+                roblox_title: "Roblox Avatar & User Lookup",
+                roblox_p1: "A lookup tool for Roblox account information — get the ID, check status, and download a high-quality avatar (<span class=\"badge\">Roblox Avatar</span>) in just a few steps.",
+
+                bypass_title: "Bypass Link",
+                bypass_p1: "A utility that helps users skip past shortener/redirect links to get the original destination link safely and quickly.",
+
+                util_title: "Server Utilities",
+                util_p1: "General utility commands: view detailed server info, set an AFK status, view system update logs and Terms of Service, view recently deleted messages in a channel (snipe), translate text into another language, and search TikTok by keyword/hashtag.",
+
+                ai_title: "AI Assistant",
+                ai_p1: "Chat directly with Meow Bot's AI assistant inside Discord — ask a question and get an instant answer without leaving the server.",
+
+                confess_title: "Confession",
+                confess_p1: "Sends an anonymous confession to the server's review channel — the sender's identity is not shown publicly.",
+
+                premium_title: "Premium",
+                premium_p1: "Advanced features for servers that have upgraded to Premium:",
+                premium_l1_title: "Auto-Bypass Link:",
+                premium_l1_desc: "Automatically skips shortener/key-system links in the designated channels.",
+                premium_l2_title: "AI Automod:",
+                premium_l2_desc: "Enables smart AI-powered content moderation for the server.",
+                premium_l3_title: "Custom Branding:",
+                premium_l3_desc: "Set a custom branding avatar and command prefix for the bot on your server.",
+                premium_l4_title: "Status Check:",
+                premium_l4_desc: "Check whether the server currently has Premium using the premiumstatus command."
+            }
+        };
+
+        let currentLang = 'vi';
+
+        function applyLanguage(lang) {
+            const dict = translations[lang];
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (dict[key] !== undefined) {
+                    el.innerHTML = dict[key];
+                }
+            });
+        }
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.lang-btn').forEach(b => {
+                if (b.textContent.trim().toUpperCase().endsWith(lang.toUpperCase())) {
+                    b.classList.add('active');
+                }
+            });
+            applyLanguage(lang);
+        }
+
+        function showDoc(id, el, titleKey) {
+            document.querySelectorAll('.doc-section').forEach(s => s.classList.remove('active'));
+            const target = document.getElementById(id);
+            if (target) target.classList.add('active');
+
+            document.querySelectorAll('.docs-menu li a').forEach(a => a.classList.remove('active'));
+            if (el) el.classList.add('active');
+
+            if (titleKey) {
+                const titleEl = document.getElementById('doc-title');
+                titleEl.setAttribute('data-i18n', titleKey);
+                if (translations[currentLang][titleKey]) {
+                    titleEl.innerHTML = translations[currentLang][titleKey];
+                }
+            }
+            return false;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => applyLanguage(currentLang));
+    </script>
+</body>
+</html>

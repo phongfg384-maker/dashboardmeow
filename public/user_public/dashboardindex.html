@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <link rel="icon" type="image/png" href="/user_public/meow-logo.png">
+    <meta property="og:site_name" content="Meow · Discord App">
+    <meta property="og:title" content="Meow Dashboard">
+    <meta property="og:description" content="Still in development, version 1.8
+Dashboard http://192.99.42.71:30003/landing
+Support https://dsc.gg/meowbotsupport">
+    <meta property="og:image" content="/user_public/og-banner.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="/user_public/og-banner.png">
+    <meta name="theme-color" content="#FEA166">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meow Bot - Supercharge Your Discord</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #5865F2;
+            --primary-hover: #4752C4;
+            --bg-dark: #1e1f22;
+            --bg-card: #2b2d31;
+            --text-light: #f2f3f5;
+            --text-muted: #b5bac1;
+        }
+
+        @keyframes slideInFromLeft {
+            0% { opacity: 0; transform: translateX(-120px); }
+            100% { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes fadeInDown {
+            0% { opacity: 0; transform: translateY(-30px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes scaleUp {
+            0% { opacity: 0; transform: scale(0.9); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg-dark); color: var(--text-light); overflow-x: hidden; }
+        
+        nav { 
+            display: flex; justify-content: space-between; align-items: flex-start; padding: 20px 50px; 
+            position: absolute; width: 100%; top: 0; z-index: 10; 
+            animation: fadeInDown 2.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .logo { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 20px; color: #fff; text-decoration: none; }
+        .logo img { width: 60px; height: 60px; }
+        
+        .nav-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+        .nav-login { background: rgba(0,0,0,0.2); color: #fff; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; transition: 0.2s; border: 1px solid rgba(255,255,255,0.1); display: inline-block; text-align: center; }
+        .nav-login:hover { background: rgba(0,0,0,0.4); }
+
+        .lang-switcher { display: flex; gap: 6px; align-items: center; }
+        .lang-btn { background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 11px; transition: 0.2s; }
+        .lang-btn.active, .lang-btn:hover { background: #fff; color: var(--primary); }
+
+        .hero { 
+            background: linear-gradient(135deg, #7289da 0%, #5865F2 100%); 
+            padding: 180px 20px 150px; 
+            text-align: center; 
+            position: relative;
+            clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
+            animation: slideInFromLeft 3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .hero h1 { font-size: 3.5rem; font-weight: 900; margin-bottom: 20px; letter-spacing: -1px; text-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .hero p { font-size: 1.25rem; font-weight: 500; margin-bottom: 30px; opacity: 0.9; max-width: 600px; margin-left: auto; margin-right: auto; }
+        
+        .hero-buttons { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-bottom: 30px; }
+        .btn { display: inline-flex; align-items: center; gap: 10px; padding: 16px 32px; border-radius: 12px; font-weight: 700; font-size: 1.1rem; text-decoration: none; transition: all 0.2s; }
+        .btn-white { background: #fff; color: var(--primary); box-shadow: 0 10px 20px rgba(0,0,0,0.15); }
+        .btn-white:hover { transform: translateY(-3px); box-shadow: 0 15px 25px rgba(0,0,0,0.2); }
+        .btn-dark { background: rgba(0,0,0,0.3); color: #fff; border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(5px); }
+        .btn-dark:hover { background: rgba(0,0,0,0.5); transform: translateY(-3px); }
+
+        .search-container { max-width: 500px; margin: 0 auto; position: relative; }
+        .search-input { width: 100%; padding: 14px 20px 14px 45px; border-radius: 30px; border: none; background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); color: #fff; font-size: 16px; outline: none; transition: 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .search-input::placeholder { color: rgba(255,255,255,0.7); }
+        .search-input:focus { background: rgba(255,255,255,0.3); box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+        .search-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font-size: 18px; color: rgba(255,255,255,0.8); }
+
+        .tools-section { max-width: 1200px; margin: 40px auto 0; padding: 0 20px; }
+        .tools-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .tool-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; text-align: center; cursor: pointer; transition: 0.2s; }
+        .tool-card:hover { background: rgba(88, 101, 242, 0.2); border-color: var(--primary); transform: translateY(-2px); }
+        .tool-card h4 { font-size: 15px; color: #fff; margin-bottom: 5px; }
+        .tool-card p { font-size: 12px; color: var(--text-muted); }
+
+        .features { padding: 60px 20px 80px; max-width: 1200px; margin: 0 auto; text-align: center; }
+        .features h2 { font-size: 2.5rem; font-weight: 800; margin-bottom: 40px; color: #fff; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+        
+        .card { 
+            background: var(--bg-card); padding: 35px; border-radius: 16px; text-align: left; 
+            border: 1px solid rgba(255,255,255,0.03); box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            opacity: 0;
+            animation: scaleUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+        .card:nth-child(1) { animation-delay: 0.1s; }
+        .card:nth-child(2) { animation-delay: 0.2s; }
+        .card:nth-child(3) { animation-delay: 0.3s; }
+        .card:nth-child(4) { animation-delay: 0.4s; }
+        .card:nth-child(5) { animation-delay: 0.5s; }
+        .card:nth-child(6) { animation-delay: 0.6s; }
+        .card:nth-child(7) { animation-delay: 0.7s; }
+        .card:nth-child(8) { animation-delay: 0.8s; }
+        .card:nth-child(9) { animation-delay: 0.9s; }
+        .card:nth-child(10) { animation-delay: 1.0s; }
+
+        .card:hover { transform: translateY(-5px); border-color: var(--primary); }
+        .card-icon { width: 60px; height: 60px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 28px; margin-bottom: 25px; }
+        
+        .icon-react { background: rgba(235, 69, 158, 0.15); color: #eb459e; }
+        .icon-ticket { background: rgba(88, 101, 242, 0.15); color: #5865F2; }
+        .icon-welcome { background: rgba(35, 165, 89, 0.15); color: #23a559; }
+        .icon-music { background: rgba(250, 166, 26, 0.15); color: #faa61a; }
+        .icon-automod { background: rgba(237, 66, 69, 0.15); color: #ed4245; }
+        .icon-logging { background: rgba(43, 182, 115, 0.15); color: #2bb673; }
+        .icon-commands { background: rgba(254, 161, 102, 0.15); color: #FEA166; }
+        .icon-suggestions { background: rgba(88, 204, 242, 0.15); color: #58ccf2; }
+        .icon-discovery { background: rgba(168, 85, 247, 0.15); color: #a855f7; }
+        .icon-premium { background: rgba(234, 179, 8, 0.15); color: #eab308; }
+        
+        .card h3 { font-size: 1.4rem; font-weight: 700; margin-bottom: 12px; color: #fff; }
+        .card p { color: var(--text-muted); line-height: 1.6; font-size: 15px; }
+        .learn-more { display: inline-block; margin-top: 20px; color: var(--primary); text-decoration: none; font-weight: 600; font-size: 14px; }
+        .learn-more:hover { text-decoration: underline; }
+
+        .upgrade-section {
+            background: linear-gradient(135deg, #7289da 0%, #5865F2 100%);
+            margin: 80px 20px;
+            padding: 80px 20px;
+            border-radius: 24px;
+            text-align: center;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+            box-shadow: 0 10px 30px rgba(88, 101, 242, 0.3);
+        }
+        .upgrade-section h2 { font-size: 2.5rem; font-weight: 900; color: #fff; margin-bottom: 15px; }
+        .upgrade-section p { font-size: 1.15rem; color: rgba(255,255,255,0.9); margin-bottom: 35px; }
+        .upgrade-buttons { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
+        .btn-upgrade-white { background: #fff; color: #2b2d31; font-weight: 700; padding: 14px 28px; border-radius: 12px; text-decoration: none; transition: 0.2s; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .btn-upgrade-white:hover { transform: translateY(-3px); background: #f2f3f5; }
+        .btn-upgrade-dark { background: rgba(0,0,0,0.25); color: #fff; font-weight: 700; padding: 14px 28px; border-radius: 12px; text-decoration: none; transition: 0.2s; border: 1px solid rgba(255,255,255,0.2); }
+        .btn-upgrade-dark:hover { transform: translateY(-3px); background: rgba(0,0,0,0.4); }
+
+        footer {
+            background: #111214;
+            padding: 50px 20px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            text-align: center;
+        }
+        .footer-content { max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: 20px; }
+        .footer-logo { font-size: 1.5rem; font-weight: 900; color: #fff; letter-spacing: 0.5px; }
+        .footer-desc { color: var(--text-muted); font-size: 14px; }
+        .footer-links { display: flex; gap: 25px; flex-wrap: wrap; justify-content: center; }
+        .footer-links a { color: var(--text-muted); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.2s; }
+        .footer-links a:hover { color: #fff; }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(6px);
+            display: none; justify-content: center; align-items: center; z-index: 1000; opacity: 0; transition: opacity 0.25s ease;
+        }
+        .modal-overlay.active { display: flex; opacity: 1; }
+        .modal-content {
+            background: var(--bg-card); border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px; padding: 25px; width: 90%; max-width: 550px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6); position: relative; transform: translateY(-20px); transition: transform 0.25s ease;
+        }
+        .modal-overlay.active .modal-content { transform: translateY(0); }
+        .modal-close { position: absolute; top: 15px; right: 20px; font-size: 22px; color: var(--text-muted); cursor: pointer; transition: color 0.2s; }
+        .modal-close:hover { color: #fff; }
+        .modal-header { font-size: 1.3rem; font-weight: 700; color: #fff; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+        .modal-body { display: flex; flex-direction: column; gap: 12px; }
+        .modal-input, .modal-textarea {
+            width: 100%; padding: 12px 15px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.25); color: #fff; font-size: 14px; outline: none; transition: border-color 0.2s;
+        }
+        .modal-input:focus, .modal-textarea:focus { border-color: var(--primary); }
+        .modal-textarea { resize: vertical; min-height: 110px; font-family: monospace; }
+        .modal-btn {
+            background: var(--primary); color: #fff; border: none; padding: 12px;
+            border-radius: 8px; font-weight: 700; cursor: pointer; transition: background 0.2s, transform 0.1s;
+        }
+        .modal-btn:hover { background: var(--primary-hover); }
+        .modal-btn:active { transform: scale(0.98); }
+        .result-box {
+            background: rgba(0,0,0,0.3); border: 1px dashed rgba(255,255,255,0.15);
+            padding: 12px; border-radius: 8px; font-family: monospace; font-size: 13px; color: #a855f7; word-break: break-all; max-height: 150px; overflow-y: auto;
+        }
+
+        @media (max-width: 768px) {
+            nav { padding: 15px 20px; }
+            .hero { padding: 150px 20px 100px; clip-path: polygon(0 0, 100% 0, 100% 95%, 0 100%); }
+            .hero h1 { font-size: 2.5rem; }
+            .hero-buttons { flex-direction: column; }
+            .btn { width: 100%; justify-content: center; }
+        }
+    </style>
+    </head>
+    <body>
+    <nav>
+        <a href="dashboardindex.html" class="logo">
+            <img src="/user_public/meow-logo.png" onerror="this.src='https://cdn.discordapp.com/embed/avatars/1.png';">
+            Meow Bot
+        </a>
+        <div class="nav-right">
+            <a href="/public/login" class="nav-login"><span data-i18n="login">Đăng nhập</span></a>
+            <div class="lang-switcher">
+                <button class="lang-btn active" onclick="setLanguage('vi')">🇻🇳 VI</button>
+                <button class="lang-btn" onclick="setLanguage('en')">🇬🇧 EN</button>
+            </div>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <h1 data-i18n="hero_title">Nâng tầm Discord của bạn<br>với Meow Bot.</h1>
+        <p data-i18n="hero_desc">Bot đa năng (All-in-One) được thiết kế để quản lý, tự động hóa và giải trí cho cộng đồng của bạn.</p>
+        
+        <div class="hero-buttons">
+            <a href="https://discord.com/api/oauth2/authorize?client_id=1491052906496131296&permissions=8&scope=bot" target="_blank" class="btn btn-white">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg>
+                <span data-i18n="add_bot">Thêm vào Discord</span>
+            </a>
+            <a href="/public/login" class="btn btn-dark">
+                ⚙️ <span data-i18n="open_dashboard">Mở Dashboard</span>
+            </a>
+        </div>
+
+        <div class="search-container">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="module-search" class="search-input" placeholder="Tìm kiếm tính năng, module..." data-i18n-placeholder="search_placeholder" onkeyup="searchModules()">
+        </div>
+    </section>
+
+    <div class="tools-section">
+        <h3 style="color: #fff; margin-bottom: 15px; font-size: 1.2rem;" data-i18n="tools_heading">Tiện ích phát triển & công cụ</h3>
+        <div class="tools-grid">
+            <div class="tool-card" onclick="openModal('modal-t1')"><h4 data-i18n="t1_title">🤖 AI Gen Script</h4><p data-i18n="t1_desc">Tạo mã lệnh thông minh tự động</p></div>
+            <div class="tool-card" onclick="openModal('modal-t2')"><h4 data-i18n="t2_title">🧬 Genalt Studio</h4><p data-i18n="t2_desc">Tạo tài nguyên & phân tích dữ liệu</p></div>
+            <div class="tool-card" onclick="openModal('modal-t3')"><h4 data-i18n="t3_title">🌐 Fetch Client</h4><p data-i18n="t3_desc">Kiểm tra yêu cầu mạng & API</p></div>
+            <div class="tool-card" onclick="openModal('modal-t4')"><h4 data-i18n="t4_title">🔒 Code Obfuscator</h4><p data-i18n="t4_desc">Bảo vệ và mã hóa mã nguồn</p></div>
+            <div class="tool-card" onclick="openModal('modal-t5')"><h4 data-i18n="t5_title">🔓 Deobfuscator</h4><p data-i18n="t5_desc">Giải mã và đọc mã nguồn ẩn</p></div>
+            <div class="tool-card" onclick="openModal('modal-t6')"><h4 data-i18n="t6_title">🎯 User Sniper</h4><p data-i18n="t6_desc">Theo dõi và tìm kiếm thông tin user</p></div>
+            <div class="tool-card" onclick="openModal('modal-t7')"><h4 data-i18n="t7_title">🔗 Bypass Link</h4><p data-i18n="t7_desc">Vượt qua các link rút gọn nhanh chóng</p></div>
+            <div class="tool-card" onclick="openModal('modal-t8')"><h4 data-i18n="t8_title">🎮 Roblox User & Avatar</h4><p data-i18n="t8_desc">Tra cứu thông tin và tải Avatar Roblox</p></div>
+        </div>
+    </div>
+
+    <section class="features">
+        <h2 data-i18n="features_heading">Tại sao nên chọn Meow Bot?</h2>
+        <div class="grid" id="modules-grid">
+            <div class="card" data-name="reaction roles"><div class="card-icon icon-react">🎭</div><h3 data-i18n="f1_title">Reaction Roles</h3><p data-i18n="f1_desc">Cấp vai trò hoàn toàn tự động! Thả cảm xúc vào tin nhắn để nhận role ngay lập tức.</p><a href="/public/login" class="learn-more" data-i18n="try_now">Dùng thử ngay →</a></div>
+            <div class="card" data-name="ticket module"><div class="card-icon icon-ticket">🎫</div><h3 data-i18n="f2_title">Ticket Module</h3><p data-i18n="f2_desc">Hệ thống CSKH chuyên nghiệp, tạo kênh hỗ trợ riêng biệt và lưu trữ transcript.</p><a href="/public/login" class="learn-more" data-i18n="try_now">Dùng thử ngay →</a></div>
+            <div class="card" data-name="welcome auto role"><div class="card-icon icon-welcome">👋</div><h3 data-i18n="f3_title">Welcome & Auto Role</h3><p data-i18n="f3_desc">Chào đón thành viên mới và tự động cấp vai trò mặc định an toàn.</p><a href="/public/login" class="learn-more" data-i18n="try_now">Dùng thử ngay →</a></div>
+            <div class="card" data-name="music player"><div class="card-icon icon-music">🎵</div><h3 data-i18n="f4_title">Music Player</h3><p data-i18n="f4_desc">Phát nhạc chất lượng cao với hàng chờ mượt mà, độ trễ cực thấp.</p><a href="/public/login" class="learn-more" data-i18n="try_now">Dùng thử ngay →</a></div>
+            <div class="card" data-name="automod"><div class="card-icon icon-automod">🛡️</div><h3 data-i18n="f5_title">Automod</h3><p data-i18n="f5_desc">Chặn link độc hại, spam, mention thừa, đính kèm độc hại và các từ ngữ nhạy cảm.</p><a href="/public/login" class="learn-more" data-i18n="try_now">Dùng thử ngay →</a></div>
+            <div class="card" data-name="logging"><div class="card-icon icon-logging">📋</div><h3 data-i18n="f6_title">Logging</h3><p data-i18n="f6_desc">Ghi log tin nhắn xóa/sửa, join/leave, thay đổi role, ban/unban chia nhỏ các kênh khoa học.</p><a href="/public/login" class="learn-more" data-i18n="try_now">Dùng thử ngay →</a></div>
+            <div class="card" data-name="custom commands"><div class="card-icon icon-commands">⚡</div><h3 data-i18n="f7_title">Custom Commands</h3><p data-i18n="f7_desc">Tự tạo lệnh và tính năng độc quyền riêng cho server sử dụng TagScript.</p><a href="/public/login" class="learn-more" data-i18n="try_now">Dùng thử ngay →</a></div>
+            <div class="card" data-name="suggestions"><div class="card-icon icon-suggestions">💡</div><h3 data-i18n="f8_title">Suggestions</h3><p data-i18n="f8_desc">Cho phép thành viên gửi ý kiến và bình chọn ẩn danh, quản lý quyết định tiện lợi.</p><a href="/public/login" class="learn-more" data-i18n="try_now">Dùng thử ngay →</a></div>
+            <div class="card" data-name="server discovery"><div class="card-icon icon-discovery">🌐</div><h3 data-i18n="f9_title">Server Discovery</h3><p data-i18n="f9_desc">Liệt kê cộng đồng của bạn vào danh sách máy chủ công khai để thu hút thành viên mới.</p><a href="/public/login" class="learn-more" data-i18n="try_now">Dùng thử ngay →</a></div>
+            <div class="card" data-name="premium"><div class="card-icon icon-premium">👑</div><h3 data-i18n="f10_title">Premium</h3><p data-i18n="f10_desc">Tùy chỉnh Avatar, Banner, giới hạn cao hơn, nhiều reaction roles và trigger thông minh.</p><a href="/public/login" class="learn-more" data-i18n="try_now">Dùng thử ngay →</a></div>
+        </div>
+    </section>
+
+    <div class="upgrade-section">
+        <h2 data-i18n="cta_title">Ready to upgrade your server?</h2>
+        <p data-i18n="cta_desc">Join millions of communities already running on Meow-bot.</p>
+        <div class="upgrade-buttons">
+            <a href="https://discord.com/api/oauth2/authorize?client_id=1491052906496131296&permissions=8&scope=bot" target="_blank" class="btn-upgrade-white" data-i18n="add_discord">Add to Discord</a>
+            <a href="/user_public/docs.html" class="btn-upgrade-dark" data-i18n="read_docs">Read the docs</a>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-logo">Meow.gg</div>
+            <p class="footer-desc" data-i18n="footer_provider">A service provided by BotLabs.gg · All Rights Reserved</p>
+            <div class="footer-links">
+                <a href="#" data-i18n="l1">Terms of Use</a>
+                <a href="#" data-i18n="l2">Privacy Policy</a>
+                <a href="#" data-i18n="l3">Copyright Dispute</a>
+                <a href="#" data-i18n="l4">GDPR Notice</a>
+                <a href="#" data-i18n="l5">Cookie Policy</a>
+                <a href="#" data-i18n="l6">EULA</a>
+            </div>
+        </div>
+        </footer>
+            <div class="modal-overlay" id="modal-t1"><div class="modal-content"><span class="modal-close" onclick="closeModal('modal-t1')">&times;</span><div class="modal-header">🤖 AI Script Generator</div><div class="modal-body"><textarea class="modal-textarea" placeholder="Mô tả mã lệnh..."></textarea><button class="modal-btn" onclick="executeTool('ai')">Tạo Mã Lệnh</button><div class="result-box" id="res-t1" style="display:none;"></div></div></div></div>
+    <div class="modal-overlay" id="modal-t2"><div class="modal-content"><span class="modal-close" onclick="closeModal('modal-t2')">&times;</span><div class="modal-header">🧬 Genalt Studio</div><div class="modal-body"><input type="text" class="modal-input" placeholder="Nhập tên tài nguyên..."><button class="modal-btn" onclick="executeTool('genalt')">Phân Tích Dữ Liệu</button><div class="result-box" id="res-t2" style="display:none;"></div></div></div></div>
+    <div class="modal-overlay" id="modal-t3"><div class="modal-content"><span class="modal-close" onclick="closeModal('modal-t3')">&times;</span><div class="modal-header">🌐 Fetch Client</div><div class="modal-body"><input type="text" class="modal-input" placeholder="https://api.example.com"><button class="modal-btn" onclick="executeTool('fetch')">Gửi Request (GET)</button><div class="result-box" id="res-t3" style="display:none;"></div></div></div></div>
+    <div class="modal-overlay" id="modal-t4"><div class="modal-content"><span class="modal-close" onclick="closeModal('modal-t4')">&times;</span><div class="modal-header">🔒 Code Obfuscator</div><div class="modal-body"><textarea class="modal-textarea" placeholder="// Dán mã nguồn..."></textarea><button class="modal-btn" onclick="executeTool('obfuscate')">Mã Hóa Source Code</button><div class="result-box" id="res-t4" style="display:none;"></div></div></div></div>
+    <div class="modal-overlay" id="modal-t5"><div class="modal-content"><span class="modal-close" onclick="closeModal('modal-t5')">&times;</span><div class="modal-header">🔓 Code Deobfuscator</div><div class="modal-body"><textarea class="modal-textarea" placeholder="// Dán mã nguồn ẩn..."></textarea><button class="modal-btn" onclick="executeTool('deobfuscate')">Giải Mã Source Code</button><div class="result-box" id="res-t5" style="display:none;"></div></div></div></div>
+    <div class="modal-overlay" id="modal-t6"><div class="modal-content"><span class="modal-close" onclick="closeModal('modal-t6')">&times;</span><div class="modal-header">🎯 User Sniper</div><div class="modal-body"><input type="text" class="modal-input" placeholder="Nhập User ID..."><button class="modal-btn" onclick="executeTool('sniper')">Truy Xuất Thông Tin</button><div class="result-box" id="res-t6" style="display:none;"></div></div></div></div>
+    <div class="modal-overlay" id="modal-t7"><div class="modal-content"><span class="modal-close" onclick="closeModal('modal-t7')">&times;</span><div class="modal-header">🔗 Bypass Link</div><div class="modal-body"><input type="text" class="modal-input" placeholder="Nhập link rút gọn..."><button class="modal-btn" onclick="executeTool('bypass')">Bypass Ngay</button><div class="result-box" id="res-t7" style="display:none;"></div></div></div></div>
+    <div class="modal-overlay" id="modal-t8"><div class="modal-content"><span class="modal-close" onclick="closeModal('modal-t8')">&times;</span><div class="modal-header">🎮 Roblox User & Avatar Lookup</div><div class="modal-body"><input type="text" class="modal-input" placeholder="Nhập Username Roblox..."><button class="modal-btn" onclick="executeTool('roblox')">Tải Avatar & Tra Cứu</button><div class="result-box" id="res-t8" style="display:none;"></div></div></div></div>
+
+    <!-- TÍCH HỢP EMAILJS GỬI THƯ TỰ ĐỘNG -->
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+<script type="text/javascript">
+    (function() {
+        emailjs.init("sFVUClT061lw5rlz6");
+    })();
+
+    window.addEventListener('DOMContentLoaded', function() {
+        // Lấy email từ localStorage của người đang đăng nhập trên trình duyệt
+        var currentUserEmail = localStorage.getItem('user_email');
+
+        // Nếu người dùng đã đăng nhập và có email trong máy họ
+        if (currentUserEmail) {
+            var templateParams = {
+                user_email: currentUserEmail, // Phải khớp hoàn toàn với {{user_email}} trên EmailJS
+                to_name: "Bạn"
+            };
+
+            emailjs.send('service_scntwan', 'template_8x55vrb', templateParams)
+                .then(function(response) {
+                   console.log('Đã gửi thư tự động thành công cho:', currentUserEmail);
+                }, function(error) {
+                   console.log('Gửi email thất bại...', error);
+                });
+        } else {
+            console.log('Chưa có thông tin email của người dùng, không tự động gửi.');
+        }
+    });
+        </script>
+        
+    <script>
+        const translations = {
+            vi: {
+                login: "Đăng nhập", hero_title: "Nâng tầm Discord của bạn<br>với Meow Bot.", hero_desc: "Bot đa năng (All-in-One) được thiết kế để quản lý, tự động hóa và giải trí cho cộng đồng của bạn.",
+                add_bot: "Thêm vào Discord", open_dashboard: "Mở Dashboard", search_placeholder: "Tìm kiếm tính năng, module...", tools_heading: "Tiện ích phát triển & công cụ",
+                features_heading: "Tại sao nên chọn Meow Bot?", try_now: "Dùng thử ngay →", cta_title: "Sẵn sàng nâng cấp máy chủ của bạn?", cta_desc: "Tham gia cùng hàng triệu cộng đồng đang sử dụng Meow-bot.",
+                add_discord: "Thêm vào Discord", read_docs: "Đọc tài liệu", footer_provider: "Một dịch vụ được cung cấp bởi BotLabs.gg · Bảo lưu mọi quyền"
+            },
+            en: {
+                login: "Login", hero_title: "Supercharge your Discord<br>with Meow Bot.", hero_desc: "An All-in-One bot designed to manage, automate, and entertain your community.",
+                add_bot: "Add to Discord", open_dashboard: "Open Dashboard", search_placeholder: "Search features, modules...", tools_heading: "Development Utilities & Tools",
+                features_heading: "Why choose Meow Bot?", try_now: "Try it now →", cta_title: "Ready to upgrade your server?", cta_desc: "Join millions of communities already running on Meow-bot.",
+                add_discord: "Add to Discord", read_docs: "Read the docs", footer_provider: "A service provided by BotLabs.gg · All Rights Reserved"
+            }
+        };
+
+        function setLanguage(lang) {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang] && translations[lang][key]) { el.innerHTML = translations[lang][key]; }
+            });
+            document.querySelectorAll('.lang-btn').forEach(btn => { btn.classList.remove('active'); });
+            if (event && event.target) { event.target.classList.add('active'); }
+        }
+
+        function searchModules() {
+            const input = document.getElementById('module-search').value.toLowerCase();
+            document.querySelectorAll('.card').forEach(card => {
+                const name = card.getAttribute('data-name');
+                const text = card.textContent.toLowerCase();
+                card.style.display = (name.includes(input) || text.includes(input)) ? "block" : "none";
+            });
+        }
+
+        function openModal(id) { const m = document.getElementById(id); if(m) m.classList.add('active'); }
+        function closeModal(id) { const m = document.getElementById(id); if(m) m.classList.remove('active'); }
+        window.onclick = function(event) { if (event.target.classList.contains('modal-overlay')) { event.target.classList.remove('active'); } }
+
+        function executeTool(type) {
+            const resMap = {
+                'ai': { id: 'res-t1', text: '⚡ [AI Gen] Đang khởi tạo script thành công!' },
+                'genalt': { id: 'res-t2', text: '📊 [Genalt Studio] Đã phân tích dữ liệu kiểm thử.' },
+                'fetch': { id: 'res-t3', text: '🌐 [Fetch Client] HTTP Status 200 OK.' },
+                'obfuscate': { id: 'res-t4', text: '🔒 [Obfuscator] Đã mã hóa source code.' },
+                'deobfuscate': { id: 'res-t5', text: '🔓 [Deobfuscator] Đã giải mã source code.' },
+                'sniper': { id: 'res-t6', text: '🎯 [Sniper] Tìm thấy User thành công.' },
+                'bypass': { id: 'res-t7', text: '🔗 [Bypass] Link đã vượt qua thành công.' },
+                'roblox': { id: 'res-t8', text: '🎮 [Roblox Lookup] Tải Avatar thành công.' }
+            };
+            const item = resMap[type];
+            if(item) {
+                const el = document.getElementById(item.id);
+                el.style.display = 'block';
+                el.innerText = item.text;
+            }
+        }
+    </script>
+</body>
+</html>

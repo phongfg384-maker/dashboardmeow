@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cấu hình Server - Meow</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/monolith.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
+
+    <style>
+        :root {
+            --bg-base: #1e1f22;
+            --bg-sidebar: #2b2d31;
+            --bg-card: #313338;
+            --bg-hover: #3f4147;
+            --accent: #5865F2;
+            --accent-hover: #4752c4;
+            --text-normal: #dbdee1;
+            --text-muted: #949ba4;
+            --text-header: #f2f3f5;
+            --danger: #da373c;
+            --success: #23a559;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg-base); color: var(--text-normal); display: flex; height: 100vh; overflow: hidden; }
+        
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-base); }
+        ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
+
+        .sidebar { width: 260px; background: rgba(43, 45, 49, 0.7); backdrop-filter: blur(15px); padding: 20px 10px; display: flex; flex-direction: column; z-index: 100; transition: left 0.3s; border-right: 1px solid rgba(255, 255, 255, 0.05); }
+        .brand { display: flex; align-items: center; gap: 12px; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 20px; font-weight: 800; color: var(--text-header); text-shadow: 0 0 10px rgba(255,255,255,0.1); }
+        .brand img { width: 36px; height: 36px; object-fit: cover; filter: drop-shadow(0 0 5px rgba(88,101,242,0.5)); transition: transform 0.3s ease; }
+        .brand:hover img { transform: rotate(10deg) scale(1.1); }
+        
+        .menu li { padding: 12px; margin-bottom: 6px; border-radius: 8px; list-style: none; cursor: pointer; font-weight: 600; color: var(--text-muted); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden; }
+        .menu li.active { background: linear-gradient(135deg, var(--accent) 0%, #7289da 100%); color: #fff; box-shadow: 0 4px 15px rgba(88, 101, 242, 0.4); transform: translateX(5px); }
+        .menu li:hover:not(.active) { background: rgba(255,255,255,0.05); color: var(--text-header); transform: translateX(5px); }
+        
+        .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: radial-gradient(circle at top right, rgba(88,101,242,0.05), transparent 50%), var(--bg-base); position: relative; }
+        
+        /* 🌟 THÊM BANNER GRADIENT XANH GIỐNG LANDING Ở PHẦN ĐẦU */
+        .config-banner {
+            background: linear-gradient(135deg, #7289da 0%, #5865F2 100%);
+            padding: 30px 40px;
+            color: #fff;
+            clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            z-index: 2;
+        }
+        .config-banner h2 { font-size: 1.8rem; font-weight: 800; margin-bottom: 5px; text-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .config-banner p { font-size: 0.95rem; opacity: 0.9; }
+
+        .topbar { height: 60px; background: transparent; display: flex; align-items: center; padding: 0 30px; position: absolute; top: 0; right: 0; z-index: 10; }
+        .btn-toggle { display: none; background: rgba(0,0,0,0.2); border: none; font-size: 20px; color: #fff; cursor: pointer; padding: 6px 10px; border-radius: 6px; margin-right: 15px; }
+        
+        .content { flex: 1; padding: 30px 40px; overflow-y: auto; z-index: 1; }
+        .section { display: none; animation: fade 0.3s ease; }
+        .section.active { display: block; }
+        @keyframes fade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .card { background: rgba(49, 51, 56, 0.6); backdrop-filter: blur(12px); padding: 35px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); max-width: 800px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); transition: transform 0.3s ease, border-color 0.3s ease; }
+        .card:hover { border-color: rgba(88, 101, 242, 0.4); transform: translateY(-3px); }
+
+        .form-group { margin-bottom: 24px; }
+        .form-group label { display: block; margin-bottom: 10px; font-weight: 600; font-size: 13px; color: var(--text-header); text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.9; }
+        .form-control { width: 100%; padding: 14px 16px; background: rgba(30, 31, 34, 0.8); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; color: var(--text-normal); font-size: 14px; transition: all 0.3s ease; }
+        .form-control:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(88, 101, 242, 0.2); background: rgba(43, 45, 49, 0.9); }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        textarea.form-control { min-height: 120px; resize: vertical; }
+        
+        .btn { padding: 14px 28px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; color: #fff; font-size: 14px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); text-transform: uppercase; letter-spacing: 1px; position: relative; overflow: hidden; }
+        .btn-primary { background: linear-gradient(135deg, var(--accent) 0%, #7289da 100%); box-shadow: 0 4px 15px rgba(88, 101, 242, 0.3); }
+        .btn-primary:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 8px 25px rgba(88, 101, 242, 0.5); }
+        .btn-primary:active { transform: translateY(1px); box-shadow: 0 2px 10px rgba(88, 101, 242, 0.3); }
+        
+        .btn-secondary { background: rgba(255,255,255,0.05); color: var(--text-header); margin-top: 10px; border: 1px solid rgba(255,255,255,0.1); }
+        .btn-secondary:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+
+        .color-wrapper { display: flex; align-items: center; background: rgba(30, 31, 34, 0.8); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; padding: 8px 14px; transition: border-color 0.3s ease; }
+        .color-wrapper:hover { border-color: rgba(255,255,255,0.1); }
+        
+        @media (max-width: 850px) {
+            .sidebar { position: fixed; left: -260px; height: 100%; box-shadow: 2px 0 10px rgba(0,0,0,0.5); z-index: 1000; }
+            .sidebar.show { left: 0; }
+            .btn-toggle { display: block; }
+            .content { padding: 20px; }
+            .form-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="sidebar" id="sidebar">
+        <div class="brand">
+            <img src="/user_public/meow-logo.png" onerror="this.src='https://cdn.discordapp.com/embed/avatars/1.png';">
+            <span>MEOW BOT</span>
+        </div>
+        <ul class="menu" id="menu-list">
+            <li data-target="ticket-section" class="active">🎫 Ticket Module</li>
+            <li data-target="welcome-section">👋 Welcome Module</li>
+            <li data-target="autorole-section">🛡️ Auto Role</li>
+            <li data-target="reactrole-section">🎭 Reaction Roles</li>
+            <li data-target="sticky-section">📌 Sticky Messages</li>
+            <li data-target="trigger-section">🤖 Auto-Responder</li>
+            <li data-target="economy-section">💰 Economy (Ncoin)</li>
+            <li data-target="confess-section">🤫 Confession</li>
+            <li data-target="warn-section">⚠️ Warn Threshold</li>
+            <li data-target="modcase-section">🛡️ Case Log</li>
+            <li data-target="afk-section">💤 AFK Members</li>
+            <li data-target="premium-section">💎 Premium</li>
+            <li style="margin-top:20px; background:var(--danger); color:#fff; text-align:center;" onclick="window.location.href='/public/servers'">🔙 Về trang Server</li>
+        </ul>
+    </nav>
+
+    <div class="main">
+        <header class="topbar">
+            <button class="btn-toggle" id="btn-toggle">☰</button>
+        </header>
+
+        <!-- Banner xanh gradient phía trên -->
+        <div class="config-banner">
+            <h2 id="banner-title">🎫 Ticket Module</h2>
+            <p id="banner-desc">Cài đặt nút hỗ trợ và hệ thống phản hồi cho máy chủ của bạn</p>
+        </div>
+
+        <div class="content">
+            <div id="ticket-section" class="section active" data-title="🎫 Ticket Module" data-desc="Cài đặt nút hỗ trợ cho máy chủ">
+                <div class="card">
+                    <form id="ticket-form">
+                        <div class="form-grid">
+                            <div class="form-group"><label>Kênh gửi Panel</label><select id="ticket-channel" class="form-control"></select></div>
+                            <div class="form-group"><label>Support Role</label><select id="ticket-role" class="form-control"></select></div>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group"><label>Tác giả (Author)</label><input type="text" id="ticket-author" class="form-control" placeholder="Đội ngũ hỗ trợ"></div>
+                            <div class="form-group"><label>Tiêu đề Embed</label><input type="text" id="ticket-title" class="form-control" placeholder="Mở Ticket"></div>
+                        </div>
+                        <div class="form-group"><label>Nội dung Embed</label><textarea id="ticket-desc" class="form-control" placeholder="Bấm nút bên dưới để mở vé..."></textarea></div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Màu viền Embed</label>
+                                <div class="color-wrapper">
+                                    <div id="color-picker-widget"></div>
+                                    <input type="text" id="ticket-color" value="#FEA166" style="background:transparent; border:none; color:var(--text-normal); margin-left:10px; font-family:monospace; outline:none; width:100%;">
+                                </div>
+                            </div>
+                            <div class="form-group"><label>Footer</label><input type="text" id="ticket-footer" class="form-control"></div>
+                        </div>
+                        <div style="margin-top:20px; padding-top:20px; border-top:1px solid #3f4147;">
+                            <label style="color:var(--text-header); font-weight:bold; margin-bottom:15px; display:block;">CÁC NÚT BẤM (BUTTONS)</label>
+                            <div id="buttons-container"></div>
+                            <button type="button" class="btn btn-secondary" onclick="addTicketButton()">➕ Thêm nút</button>
+                        </div>
+                        <div style="margin-top:30px;"><button type="submit" class="btn btn-primary">💾 LƯU TICKET MODULE</button></div>
+                    </form>
+                </div>
+            </div>
+
+            <div id="welcome-section" class="section" data-title="👋 Welcome Module" data-desc="Gửi tin nhắn chào mừng thành viên mới">
+                <div class="card">
+                    <form id="welcome-form">
+                        <div class="form-group"><label>Kênh Chào Mừng</label><select id="welcome-channel" class="form-control"></select></div>
+                        <div class="form-group"><label>Tin nhắn (Dùng {user} để tag)</label><textarea id="welcome-msg" class="form-control"></textarea></div>
+                        <button type="submit" class="btn btn-primary">💾 LƯU WELCOME MODULE</button>
+                    </form>
+                </div>
+            </div>
+
+            <div id="autorole-section" class="section" data-title="🛡️ Auto Role" data-desc="Tự động cấp vai trò cho thành viên mới gia nhập">
+                <div class="card">
+                    <form id="autorole-form">
+                        <div class="form-group"><label>Vai Trò Tự Động Set</label><select id="autorole-role" class="form-control"></select></div>
+                        <button type="submit" class="btn btn-primary">💾 LƯU AUTO ROLE</button>
+                    </form>
+                </div>
+            </div>
+
+            <div id="reactrole-section" class="section" data-title="🎭 Reaction Roles" data-desc="Thả cảm xúc vào tin nhắn để nhận vai trò tự động">
+                <div class="card">
+                    <form id="reactrole-form">
+                        <div class="form-group"><label>Vai Trò Nhận Được</label><select id="reactrole-role" class="form-control"></select></div>
+                        <button type="submit" class="btn btn-primary">💾 LƯU REACTION ROLE</button>
+                    </form>
+                </div>
+            </div>
+
+            <div id="sticky-section" class="section" data-title="📌 Sticky Messages" data-desc="Ghim tin nhắn luôn hiện ở cuối kênh">
+                <div class="card">
+                    <form id="sticky-form">
+                        <div class="form-grid">
+                            <div class="form-group"><label>Kênh áp dụng</label><select id="sticky-channel" class="form-control"></select></div>
+                            <div class="form-group"><label>Gửi lại sau mỗi (số tin nhắn)</label><input type="number" id="sticky-cooldown" class="form-control" min="1" max="50" value="1"></div>
+                        </div>
+                        <div class="form-group"><label>Nội dung Sticky</label><textarea id="sticky-content" class="form-control" placeholder="Nội dung sẽ luôn ghim ở cuối kênh..."></textarea></div>
+                        <button type="submit" class="btn btn-primary">💾 LƯU / CẬP NHẬT STICKY</button>
+                        <button type="button" class="btn btn-secondary" onclick="deleteSticky()">🗑️ Xoá Sticky của kênh này</button>
+                    </form>
+                    <div id="sticky-list" style="margin-top:24px; border-top:1px solid #3f4147; padding-top:16px;"></div>
+                </div>
+            </div>
+
+            <div id="trigger-section" class="section" data-title="🤖 Auto-Responder" data-desc="Phản hồi tự động theo từ khoá">
+                <div class="card">
+                    <form id="trigger-form">
+                        <div class="form-grid">
+                            <div class="form-group"><label>Từ khoá</label><input type="text" id="trigger-word" class="form-control" placeholder="hello"></div>
+                            <div class="form-group"><label>Kiểu khớp</label>
+                                <select id="trigger-matchtype" class="form-control">
+                                    <option value="exact">Chính xác (exact)</option>
+                                    <option value="includes">Chứa từ khoá (includes)</option>
+                                    <option value="startswith">Bắt đầu bằng (startswith)</option>
+                                    <option value="regex">Regex (nâng cao)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group"><label>Nội dung phản hồi</label><textarea id="trigger-response" class="form-control" placeholder="Xin chào!"></textarea></div>
+                        <button type="submit" class="btn btn-primary">➕ THÊM / CẬP NHẬT TRIGGER</button>
+                    </form>
+                    <div id="trigger-list" style="margin-top:24px; border-top:1px solid #3f4147; padding-top:16px;"></div>
+                </div>
+            </div>
+
+            <div id="economy-section" class="section" data-title="💰 Economy (Ncoin)" data-desc="Tra cứu và điều chỉnh Ncoin của thành viên">
+                <div class="card">
+                    <div class="form-group"><label>User ID cần tra cứu</label><input type="text" id="economy-userid" class="form-control" placeholder="123456789012345678"></div>
+                    <button type="button" class="btn btn-secondary" onclick="lookupEconomy()">🔍 Tra cứu</button>
+                    <div id="economy-info" style="margin-top:20px;"></div>
+                    <div id="economy-adjust" style="display:none; margin-top:20px; padding-top:20px; border-top:1px solid #3f4147;">
+                        <div class="form-grid">
+                            <div class="form-group"><label>Số Ncoin (âm để trừ)</label><input type="number" id="economy-amount" class="form-control" placeholder="VD: 1000 hoặc -500"></div>
+                            <div class="form-group" style="display:flex; align-items:flex-end;"><button type="button" class="btn btn-primary" style="width:100%;" onclick="adjustEconomy()">💾 ÁP DỤNG</button></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="confess-section" class="section" data-title="🤫 Confession" data-desc="Cấu hình kênh gửi/duyệt tâm sự ẩn danh">
+                <div class="card">
+                    <form id="confess-form">
+                        <div class="form-group"><label>Kênh Confession công khai</label><select id="confess-channel" class="form-control"></select></div>
+                        <div class="form-group"><label>Kênh duyệt (Review) cho Mod</label><select id="confess-review" class="form-control"></select></div>
+                        <button type="submit" class="btn btn-primary">💾 LƯU CONFESSION</button>
+                    </form>
+                </div>
+            </div>
+
+            <div id="warn-section" class="section" data-title="⚠️ Warn Threshold" data-desc="Đặt mức phạt tự động theo số lần cảnh cáo">
+                <div class="card">
+                    <div id="warn-list"></div>
+                    <button type="button" class="btn btn-secondary" onclick="addWarnRow()">➕ Thêm mức phạt</button>
+                    <div style="margin-top:20px;"><button type="button" class="btn btn-primary" onclick="saveWarnThresholds()">💾 LƯU WARN THRESHOLD</button></div>
+                </div>
+            </div>
+
+            <div id="modcase-section" class="section" data-title="🛡️ Case Log" data-desc="Lịch sử kiểm duyệt gần đây (ban/kick/mute/warn...)">
+                <div class="card">
+                    <div class="form-group"><label>Lọc theo User ID (để trống = tất cả)</label><input type="text" id="modcase-filter" class="form-control" placeholder="123456789012345678"></div>
+                    <button type="button" class="btn btn-secondary" onclick="loadModCases()">🔄 Tải lại</button>
+                    <div id="modcase-list" style="margin-top:20px;"></div>
+                </div>
+            </div>
+
+            <div id="afk-section" class="section" data-title="💤 AFK Members" data-desc="Danh sách thành viên đang bật AFK">
+                <div class="card">
+                    <button type="button" class="btn btn-secondary" onclick="loadAfk()">🔄 Tải lại</button>
+                    <div id="afk-list" style="margin-top:20px;"></div>
+                </div>
+            </div>
+
+            <div id="premium-section" class="section" data-title="💎 Premium" data-desc="Trạng thái và branding Premium của server">
+                <div class="card">
+                    <div id="premium-status" style="margin-bottom:20px; font-weight:700;"></div>
+                    <form id="premium-form">
+                        <div class="form-group"><label>Bot Avatar URL riêng</label><input type="text" id="premium-avatar" class="form-control" placeholder="https://..."></div>
+                        <div class="form-group"><label>Prefix riêng</label><input type="text" id="premium-prefix" class="form-control" maxlength="5" placeholder="?"></div>
+                        <button type="submit" class="btn btn-primary">💾 LƯU BRANDING PREMIUM</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const menuItems = document.querySelectorAll('#menu-list li[data-target]');
+        const sections = document.querySelectorAll('.section');
+        const sidebar = document.getElementById('sidebar');
+        const bannerTitle = document.getElementById('banner-title');
+        const bannerDesc = document.getElementById('banner-desc');
+
+        document.getElementById('btn-toggle').addEventListener('click', (e) => { e.stopPropagation(); sidebar.classList.toggle('show'); });
+        document.addEventListener('click', (e) => { if (sidebar.classList.contains('show') && !sidebar.contains(e.target) && e.target.id !== 'btn-toggle') sidebar.classList.remove('show'); });
+
+        menuItems.forEach(item => {
+            item.addEventListener('click', () => {
+                menuItems.forEach(el => el.classList.remove('active')); 
+                item.classList.add('active');
+                sections.forEach(sec => sec.classList.remove('active'));
+                
+                const targetId = item.getAttribute('data-target');
+                const targetSec = document.getElementById(targetId);
+                targetSec.classList.add('active');
+
+                // Cập nhật tiêu đề banner theo mục đang chọn
+                bannerTitle.textContent = targetSec.getAttribute('data-title');
+                bannerDesc.textContent = targetSec.getAttribute('data-desc');
+
+                if (window.innerWidth <= 850) sidebar.classList.remove('show');
+            });
+        });
+
+        const pickr = Pickr.create({
+            el: '#color-picker-widget', theme: 'monolith', default: '#FEA166',
+            swatches: ['#FEA166', '#5865F2', '#da373c', '#23a559', '#F5A623', '#000000', '#FFFFFF'],
+            components: { preview: true, opacity: true, hue: true, interaction: { hex: true, rgba: true, input: true, save: true } }
+        });
+        pickr.on('save', (color) => { document.getElementById('ticket-color').value = color.toHEXA().toString(); pickr.hide(); })
+             .on('change', (color) => { document.getElementById('ticket-color').value = color.toHEXA().toString(); });
+
+        function addTicketButton() {
+            const container = document.getElementById('buttons-container');
+            const div = document.createElement('div');
+            div.className = "form-grid button-item";
+            div.style.background = "var(--bg-base)"; div.style.padding = "15px"; div.style.borderRadius = "8px"; div.style.marginBottom = "15px"; div.style.position = "relative"; div.style.border = "1px solid #3f4147";
+            div.innerHTML = `
+                <button type="button" onclick="this.parentElement.remove()" style="position:absolute; top:10px; right:10px; background:none; border:none; color:var(--danger); font-size:18px; cursor:pointer;">✖</button>
+                <div class="form-group" style="margin:0;"><label>Chữ trên Nút</label><input type="text" class="form-control btn-label" value="Tạo Ticket" required></div>
+                <div class="form-group" style="margin:0;"><label>Màu Nút</label>
+                    <select class="form-control btn-style"><option value="Primary">Xanh (Blurple)</option><option value="Secondary">Xám (Grey)</option><option value="Success">Xanh Lá (Green)</option><option value="Danger">Đỏ (Red)</option></select>
+                </div>
+                <div class="form-group" style="grid-column: span 2; margin:0; margin-top:10px;"><label>ID Kỹ Thuật (Không sửa)</label><input type="text" class="form-control btn-id" value="btn_${Math.random().toString(36).substr(2, 6)}" readonly></div>
+            `;
+            container.appendChild(div);
+        }
+
+        const params = new URLSearchParams(window.location.search);
+        const guildId = params.get('guildId');
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            addTicketButton();
+            if (!guildId) return;
+            try {
+                const [chRes, rRes, configRes, advRes] = await Promise.all([
+                    fetch(`/api/guilds/${guildId}/channels`), 
+                    fetch(`/api/guilds/${guildId}/roles`),
+                    fetch(`/api/bot/guild/${guildId}/config`),
+                    fetch(`/api/guilds/${guildId}/advanced-config`)
+                ]);
+                if (chRes.ok) {
+                    const channelsData = await chRes.json();
+                    const html = '<option value="">-- Chọn Kênh --</option>' + channelsData.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
+                    document.getElementById('ticket-channel').innerHTML = html; document.getElementById('welcome-channel').innerHTML = html;
+                    document.getElementById('sticky-channel').innerHTML = html;
+                    document.getElementById('confess-channel').innerHTML = html;
+                    document.getElementById('confess-review').innerHTML = html;
+                }
+                if (rRes.ok) {
+                    const rolesData = await rRes.json();
+                    const html = '<option value="">-- Chọn Vai Trò --</option>' + rolesData.map(r => `<option value="${r.id}">@ ${r.name}</option>`).join('');
+                    document.getElementById('ticket-role').innerHTML = html; document.getElementById('autorole-role').innerHTML = html; document.getElementById('reactrole-role').innerHTML = html;
+                }
+                
+                if (configRes.ok) {
+                    const { config } = await configRes.json();
+                    if (config && config.ticket) {
+                        if (config.ticket.channelId) document.getElementById('ticket-channel').value = config.ticket.channelId;
+                        if (config.ticket.staffRoleId) document.getElementById('ticket-role').value = config.ticket.staffRoleId;
+                        if (config.ticket.welcomeMessage) document.getElementById('ticket-author').value = config.ticket.welcomeMessage;
+                        if (config.ticket.embedTitle) document.getElementById('ticket-title').value = config.ticket.embedTitle;
+                        if (config.ticket.embedDesc) document.getElementById('ticket-desc').value = config.ticket.embedDesc;
+                        if (config.ticket.embedColor) {
+                            document.getElementById('ticket-color').value = config.ticket.embedColor;
+                            pickr.setColor(config.ticket.embedColor);
+                        }
+                        if (config.ticket.buttonLabel) document.getElementById('ticket-footer').value = config.ticket.buttonLabel;
+                    }
+                }
+
+                if (advRes.ok) {
+                    const { data } = await advRes.json();
+                    if (data) {
+                        if (data.welcomeChannelId) document.getElementById('welcome-channel').value = data.welcomeChannelId;
+                        if (data.welcomeMessage) document.getElementById('welcome-msg').value = data.welcomeMessage;
+                        if (data.autoRoleId) document.getElementById('autorole-role').value = data.autoRoleId;
+                        if (data.reactRoleId) document.getElementById('reactrole-role').value = data.reactRoleId;
+                    }
+                }
+                loadSticky();
+                loadTriggers();
+                loadConfessConfig();
+                loadWarnThresholds();
+                loadPremium();
+            } catch(e) { console.error(e); }
+        });
+
+        // ================= STICKY MESSAGES =================
+        async function loadSticky() {
+            if (!guildId) return;
+            const res = await fetch(`/api/guilds/${guildId}/sticky`);
+            if (!res.ok) return;
+            const { data } = await res.json();
+            const list = document.getElementById('sticky-list');
+            if (!data || !data.length) { list.innerHTML = '<p style="color:var(--text-muted);">Chưa có sticky nào.</p>'; return; }
+            list.innerHTML = data.map(s => `
+                <div style="background:var(--bg-base); padding:12px 15px; border-radius:8px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; gap:10px;">
+                    <div><strong>#${s.channelId}</strong><br><span style="color:var(--text-muted); font-size:13px;">${(s.content || '').slice(0, 80)}</span></div>
+                    <button type="button" class="btn btn-secondary" style="padding:8px 14px;" onclick="removeSticky('${s.channelId}')">🗑️ Xoá</button>
+                </div>
+            `).join('');
+        }
+
+        document.getElementById('sticky-form').onsubmit = async (e) => {
+            e.preventDefault();
+            if (!guildId) return alert("Vui lòng chọn máy chủ trước!");
+            const body = {
+                channelId: document.getElementById('sticky-channel').value,
+                content: document.getElementById('sticky-content').value,
+                cooldown: document.getElementById('sticky-cooldown').value,
+            };
+            if (!body.channelId || !body.content) return alert("Vui lòng chọn kênh và nhập nội dung!");
+            const res = await fetch(`/api/guilds/${guildId}/sticky`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+            if (res.ok) { alert("Lưu Sticky thành công!"); loadSticky(); } else { alert("Lỗi khi lưu Sticky!"); }
+        };
+
+        async function removeSticky(channelId) {
+            if (!confirm("Xoá sticky của kênh này?")) return;
+            await fetch(`/api/guilds/${guildId}/sticky/${channelId}`, { method: 'DELETE' });
+            loadSticky();
+        }
+
+        function deleteSticky() {
+            const channelId = document.getElementById('sticky-channel').value;
+            if (!channelId) return alert("Chọn kênh cần xoá sticky trước!");
+            removeSticky(channelId);
+        }
+
+        // ================= AUTO-RESPONDER (TRIGGER) =================
+        async function loadTriggers() {
+            if (!guildId) return;
+            const res = await fetch(`/api/guilds/${guildId}/triggers`);
+            if (!res.ok) return;
+            const { data } = await res.json();
+            const list = document.getElementById('trigger-list');
+            if (!data || !data.length) { list.innerHTML = '<p style="color:var(--text-muted);">Chưa có trigger nào.</p>'; return; }
+            list.innerHTML = data.map(t => `
+                <div style="background:var(--bg-base); padding:12px 15px; border-radius:8px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; gap:10px;">
+                    <div><strong>${t.triggerWord}</strong> <span style="color:var(--text-muted); font-size:12px;">[${t.matchType}]</span><br><span style="color:var(--text-muted); font-size:13px;">${(t.response || '').slice(0, 80)}</span></div>
+                    <button type="button" class="btn btn-secondary" style="padding:8px 14px;" onclick="removeTrigger('${encodeURIComponent(t.triggerWord)}')">🗑️ Xoá</button>
+                </div>
+            `).join('');
+        }
+
+        document.getElementById('trigger-form').onsubmit = async (e) => {
+            e.preventDefault();
+            if (!guildId) return alert("Vui lòng chọn máy chủ trước!");
+            const body = {
+                triggerWord: document.getElementById('trigger-word').value,
+                matchType: document.getElementById('trigger-matchtype').value,
+                response: document.getElementById('trigger-response').value,
+            };
+            if (!body.triggerWord || !body.response) return alert("Vui lòng nhập từ khoá và nội dung phản hồi!");
+            const res = await fetch(`/api/guilds/${guildId}/triggers`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+            if (res.ok) {
+                alert("Lưu Trigger thành công!");
+                document.getElementById('trigger-word').value = '';
+                document.getElementById('trigger-response').value = '';
+                loadTriggers();
+            } else if (res.status === 400) {
+                const err = await res.json().catch(() => ({}));
+                alert(err.error === 'invalid_regex' ? "Regex không hợp lệ!" : "Vui lòng kiểm tra lại dữ liệu!");
+            } else { alert("Lỗi khi lưu Trigger!"); }
+        };
+
+        async function removeTrigger(triggerWordEncoded) {
+            if (!confirm("Xoá trigger này?")) return;
+            await fetch(`/api/guilds/${guildId}/triggers/${triggerWordEncoded}`, { method: 'DELETE' });
+            loadTriggers();
+        }
+
+        // ================= ECONOMY (NCOIN) =================
+        async function lookupEconomy() {
+            if (!guildId) return alert("Vui lòng chọn máy chủ trước!");
+            const userId = document.getElementById('economy-userid').value.trim();
+            if (!userId) return alert("Nhập User ID cần tra cứu!");
+            const res = await fetch(`/api/guilds/${guildId}/economy/${userId}`);
+            const box = document.getElementById('economy-info');
+            if (res.status === 404) {
+                box.innerHTML = '<p style="color:var(--danger);">User này không phải thành viên của server.</p>';
+                document.getElementById('economy-adjust').style.display = 'none';
+                return;
+            }
+            if (!res.ok) { box.innerHTML = '<p style="color:var(--danger);">Lỗi khi tra cứu.</p>'; return; }
+            const { data } = await res.json();
+            box.innerHTML = `
+                <div style="background:var(--bg-base); padding:15px; border-radius:8px;">
+                    <strong>${data.userId}</strong><br>
+                    💰 Ví: ${data.coins.toLocaleString('vi-VN')} Ncoin &nbsp; | &nbsp;
+                    🏦 Ngân hàng: ${data.bank.toLocaleString('vi-VN')} Ncoin<br>
+                    📦 Lootbox: ${data.lootbox} &nbsp; | &nbsp; ⚔️ Weaponsbox: ${data.weaponsbox}
+                </div>
+            `;
+            document.getElementById('economy-adjust').style.display = 'block';
+        }
+
+        async function adjustEconomy() {
+            const userId = document.getElementById('economy-userid').value.trim();
+            const amount = document.getElementById('economy-amount').value;
+            if (!userId || !amount) return alert("Nhập số Ncoin cần cộng/trừ!");
+            const res = await fetch(`/api/guilds/${guildId}/economy/${userId}/adjust`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ amount }) });
+            if (res.ok) { alert("Cập nhật Ncoin thành công!"); document.getElementById('economy-amount').value = ''; lookupEconomy(); }
+            else { const err = await res.json().catch(() => ({})); alert(err.message || "Lỗi khi cập nhật Ncoin!"); }
+        }
+
+        // ================= CONFESSION =================
+        async function loadConfessConfig() {
+            if (!guildId) return;
+            const res = await fetch(`/api/guilds/${guildId}/confess-config`);
+            if (!res.ok) return;
+            const { data } = await res.json();
+            if (data.confessChannel) document.getElementById('confess-channel').value = data.confessChannel;
+            if (data.reviewChannel) document.getElementById('confess-review').value = data.reviewChannel;
+        }
+
+        document.getElementById('confess-form').onsubmit = async (e) => {
+            e.preventDefault();
+            if (!guildId) return alert("Vui lòng chọn máy chủ trước!");
+            const body = {
+                confessChannel: document.getElementById('confess-channel').value,
+                reviewChannel: document.getElementById('confess-review').value,
+            };
+            const res = await fetch(`/api/guilds/${guildId}/confess-config`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+            if (res.ok) alert("Lưu Confession thành công!"); else alert("Lỗi khi lưu Confession!");
+        };
+
+        // ================= WARN THRESHOLD =================
+        function addWarnRow(count = '', action = 'mute', durationMinutes = '') {
+            const wrap = document.getElementById('warn-list');
+            const div = document.createElement('div');
+            div.className = "form-grid warn-row";
+            div.style.cssText = "background:var(--bg-base); padding:15px; border-radius:8px; margin-bottom:12px; position:relative; border:1px solid #3f4147;";
+            div.innerHTML = `
+                <button type="button" onclick="this.parentElement.remove()" style="position:absolute; top:10px; right:10px; background:none; border:none; color:var(--danger); font-size:18px; cursor:pointer;">✖</button>
+                <div class="form-group" style="margin:0;"><label>Số Warn</label><input type="number" min="1" class="form-control warn-count" value="${count}"></div>
+                <div class="form-group" style="margin:0;"><label>Hành động</label>
+                    <select class="form-control warn-action">
+                        <option value="mute" ${action === 'mute' ? 'selected' : ''}>Mute</option>
+                        <option value="timeout" ${action === 'timeout' ? 'selected' : ''}>Timeout</option>
+                        <option value="kick" ${action === 'kick' ? 'selected' : ''}>Kick</option>
+                        <option value="ban" ${action === 'ban' ? 'selected' : ''}>Ban</option>
+                    </select>
+                </div>
+                <div class="form-group" style="grid-column:span 2; margin:0; margin-top:10px;"><label>Thời lượng (phút, nếu mute/timeout)</label><input type="number" min="1" class="form-control warn-duration" value="${durationMinutes || ''}"></div>
+            `;
+            wrap.appendChild(div);
+        }
+
+        async function loadWarnThresholds() {
+            if (!guildId) return;
+            const res = await fetch(`/api/guilds/${guildId}/warn-threshold`);
+            if (!res.ok) return;
+            const { data } = await res.json();
+            document.getElementById('warn-list').innerHTML = '';
+            if (data.thresholds && data.thresholds.length) {
+                data.thresholds.forEach(t => addWarnRow(t.count, t.action, t.durationMinutes));
+            } else {
+                addWarnRow();
+            }
+        }
+
+        async function saveWarnThresholds() {
+            if (!guildId) return alert("Vui lòng chọn máy chủ trước!");
+            const thresholds = Array.from(document.querySelectorAll('.warn-row')).map(row => ({
+                count: row.querySelector('.warn-count').value,
+                action: row.querySelector('.warn-action').value,
+                durationMinutes: row.querySelector('.warn-duration').value || null,
+            }));
+            const res = await fetch(`/api/guilds/${guildId}/warn-threshold`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ thresholds }) });
+            if (res.ok) alert("Lưu Warn Threshold thành công!"); else alert("Lỗi khi lưu!");
+        }
+
+        // ================= MOD CASE LOG =================
+        async function loadModCases() {
+            if (!guildId) return alert("Vui lòng chọn máy chủ trước!");
+            const userId = document.getElementById('modcase-filter').value.trim();
+            const url = new URL(`${location.origin}/api/guilds/${guildId}/mod-cases`);
+            if (userId) url.searchParams.set('userId', userId);
+            const res = await fetch(url);
+            const box = document.getElementById('modcase-list');
+            if (!res.ok) { box.innerHTML = '<p style="color:var(--danger);">Không tải được dữ liệu.</p>'; return; }
+            const { data } = await res.json();
+            if (!data || !data.length) { box.innerHTML = '<p style="color:var(--text-muted);">Không có case nào.</p>'; return; }
+            box.innerHTML = data.map(c => `
+                <div style="background:var(--bg-base); padding:12px 15px; border-radius:8px; margin-bottom:10px;">
+                    <strong>#${c.caseId} • ${c.type.toUpperCase()}</strong> ${c.active ? '' : '<span style="color:var(--text-muted);">(đã gỡ)</span>'}<br>
+                    <span style="color:var(--text-muted); font-size:13px;">Target: ${c.userTag} (${c.userId}) • Mod: ${c.moderatorTag}<br>Lý do: ${c.reason}</span>
+                </div>
+            `).join('');
+        }
+
+        // ================= AFK =================
+        async function loadAfk() {
+            if (!guildId) return alert("Vui lòng chọn máy chủ trước!");
+            const res = await fetch(`/api/guilds/${guildId}/afk`);
+            const box = document.getElementById('afk-list');
+            if (!res.ok) { box.innerHTML = '<p style="color:var(--danger);">Không tải được dữ liệu.</p>'; return; }
+            const { data } = await res.json();
+            if (!data || !data.length) { box.innerHTML = '<p style="color:var(--text-muted);">Không có ai đang AFK.</p>'; return; }
+            box.innerHTML = data.map(a => `
+                <div style="background:var(--bg-base); padding:12px 15px; border-radius:8px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+                    <div><strong>${a.userId}</strong><br><span style="color:var(--text-muted); font-size:13px;">${a.reason}</span></div>
+                    <button type="button" class="btn btn-secondary" style="padding:8px 14px;" onclick="clearAfk('${a.userId}')">✔️ Gỡ AFK</button>
+                </div>
+            `).join('');
+        }
+
+        async function clearAfk(userId) {
+            await fetch(`/api/guilds/${guildId}/afk/${userId}`, { method: 'DELETE' });
+            loadAfk();
+        }
+
+        // ================= PREMIUM =================
+        async function loadPremium() {
+            if (!guildId) return;
+            const res = await fetch(`/api/guilds/${guildId}/premium`);
+            if (!res.ok) return;
+            const { data } = await res.json();
+            const statusBox = document.getElementById('premium-status');
+            statusBox.innerHTML = data.enabled
+                ? `<span style="color:var(--success);">💎 Server đang là Premium${data.expiresAt ? ` (hết hạn: ${new Date(data.expiresAt).toLocaleDateString('vi-VN')})` : ''}</span>`
+                : `<span style="color:var(--text-muted);">Server chưa nâng cấp Premium.</span>`;
+            document.getElementById('premium-avatar').value = data.botAvatarUrl || '';
+            document.getElementById('premium-prefix').value = data.prefix || '';
+        }
+
+        document.getElementById('premium-form').onsubmit = async (e) => {
+            e.preventDefault();
+            if (!guildId) return alert("Vui lòng chọn máy chủ trước!");
+            const body = {
+                botAvatarUrl: document.getElementById('premium-avatar').value,
+                prefix: document.getElementById('premium-prefix').value,
+            };
+            const res = await fetch(`/api/guilds/${guildId}/premium`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+            if (res.ok) alert("Lưu Premium branding thành công!");
+            else if (res.status === 403) alert("Server chưa nâng cấp Premium nên không thể chỉnh branding.");
+            else alert("Lỗi khi lưu!");
+        };
+
+        async function saveData(data, msg) {
+            if (!guildId) return alert("Vui lòng chọn máy chủ từ trang chủ trước!");
+            try {
+                const res = await fetch(`/api/guilds/${guildId}/ticket-config`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+                if (res.ok) alert(msg + " thành công!"); else alert("Lỗi máy chủ khi lưu!");
+            } catch (err) { alert("Mất kết nối tới API!"); }
+        }
+
+        document.getElementById('ticket-form').onsubmit = (e) => {
+            e.preventDefault();
+            const buttons = Array.from(document.querySelectorAll('.button-item')).map(div => ({
+                label: div.querySelector('.btn-label').value, style: div.querySelector('.btn-style').value, customId: div.querySelector('.btn-id').value
+            }));
+            saveData({
+                channelId: document.getElementById('ticket-channel').value, roleId: document.getElementById('ticket-role').value,
+                author: document.getElementById('ticket-author').value, title: document.getElementById('ticket-title').value,
+                desc: document.getElementById('ticket-desc').value, footer: document.getElementById('ticket-footer').value,
+                color: document.getElementById('ticket-color').value, buttons: buttons
+            }, "Lưu Ticket Module");
+        };
+
+        document.getElementById('welcome-form').onsubmit = (e) => { e.preventDefault(); saveData({ welcomeChannelId: document.getElementById('welcome-channel').value, welcomeMessage: document.getElementById('welcome-msg').value }, "Lưu Welcome Module"); };
+        document.getElementById('autorole-form').onsubmit = (e) => { e.preventDefault(); saveData({ autoRoleId: document.getElementById('autorole-role').value }, "Lưu Auto Role"); };
+        document.getElementById('reactrole-form').onsubmit = (e) => { e.preventDefault(); saveData({ reactRoleId: document.getElementById('reactrole-role').value }, "Lưu Reaction Role"); };
+    </script>
+</body>
+</html>

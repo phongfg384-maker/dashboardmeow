@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meow Bot · Privacy Policy</title>
+  <meta name="description" content="Privacy Policy for Meow Bot." />
+  <meta name="theme-color" content="#5865F2" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="legal.css" />
+</head>
+<body>
+  <div class="top-progress" id="progress"></div>
+  <div class="wrap">
+    <div class="card hero">
+      <div class="hero-inner">
+        <div>
+          <div class="brand-badge"><span class="brand-dot"></span> Meow Legal Center · v1.0</div>
+          <h1>Privacy Policy</h1>
+          <p>How Meow Bot stores and uses data.</p>
+          <div class="hero-actions">
+            <a class="btn primary" href="dashboardindex.html">← Back to Dashboard</a>
+            <a class="btn" href="privacy.html">Refresh page</a>
+            <a class="btn warn" href="#s1">Read policy</a>
+          </div>
+        </div>
+        <div class="meta">
+          <div class="mini"><span class="k">Effective date</span><span class="v">August 7, 2026</span></div>
+          <div class="mini"><span class="k">Last updated</span><span class="v">August 7, 2026</span></div>
+          <div class="mini"><span class="k">Document</span><span class="v">Privacy Policy</span></div>
+          <div class="mini"><span class="k">Platform</span><span class="v">Discord / Dashboard</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="shell">
+      <aside class="card sidebar">
+        <input class="search" id="search" type="search" placeholder="Search this page..." />
+        <h3>On this page</h3>
+        <nav class="toc" id="toc"><a href="#s1">1. Information We Collect</a>
+<a href="#s2">2. How We Use Data</a>
+<a href="#s3">3. Data Storage</a>
+<a href="#s4">4. Data Sharing</a>
+<a href="#s5">5. Data Retention</a>
+<a href="#s6">6. Your Rights</a>
+<a href="#s7">7. Third-Party Services</a>
+<a href="#s8">8. Children's Privacy</a>
+<a href="#s9">9. Changes to This Policy</a>
+<a href="#s10">10. Contact</a></nav>
+      </aside>
+
+      <main class="card content">
+        <div class="note">This page is written for a Discord bot dashboard. Replace support details or legal wording with your own if needed.</div>
+        <div style="height:14px"></div>
+        <section class="section" id="s1"><h2>1. Information We Collect</h2><p>We may store guild IDs, user IDs, channel IDs, role IDs, configuration values, logs, economy data, ticket data, and other operational records required for the Bot to work.</p>
+<p>If AI features are enabled, prompts and responses may be temporarily processed for the requested feature.</p></section>
+<section class="section" id="s2"><h2>2. How We Use Data</h2><p>Data is used to deliver Bot features, remember server settings, provide moderation and logging, and prevent abuse.</p>
+<p>We may also use data to troubleshoot errors and improve the service.</p></section>
+<section class="section" id="s3"><h2>3. Data Storage</h2><p>Data may be stored in databases, log files, or third-party services used to run the Bot.</p>
+<p>We take reasonable steps to protect stored data, but no online system can guarantee absolute security.</p></section>
+<section class="section" id="s4"><h2>4. Data Sharing</h2><p>We do not sell personal data.</p>
+<p>Data may be shared only when required by law, to protect the service, or to operate services provided by trusted vendors.</p></section>
+<section class="section" id="s5"><h2>5. Data Retention</h2><p>We keep data only as long as needed for the service or as required by law, security, or dispute handling.</p>
+<p>When practical, server owners may request deletion of eligible server data.</p></section>
+<section class="section" id="s6"><h2>6. Your Rights</h2><p>Depending on your location, you may have rights to access, correct, delete, or object to certain processing of your data.</p>
+<p>Requests can usually be made through the support server or dashboard contact options.</p></section>
+<section class="section" id="s7"><h2>7. Third-Party Services</h2><p>The Bot may rely on Discord API, hosting providers, database providers, AI vendors, and other tools needed to operate.</p>
+<p>Those third parties have their own privacy terms and policies.</p></section>
+<section class="section" id="s8"><h2>8. Children&#x27;s Privacy</h2><p>The Bot is intended for users who are allowed to use Discord according to Discord&#x27;s age rules and the laws that apply to them.</p></section>
+<section class="section" id="s9"><h2>9. Changes to This Policy</h2><p>This Privacy Policy may change over time.</p>
+<p>The updated version becomes effective when posted.</p></section>
+<section class="section" id="s10"><h2>10. Contact</h2><p>If you have questions about privacy, data removal, or retention, contact the support server.</p></section>
+      </main>
+
+      <div class="footer">
+        <div>© 2026 Meow Bot · Legal Center</div>
+        <div class="footer-links">
+          <a href="tos.html">Terms</a>
+          <a href="privacy.html">Privacy</a>
+          <a href="copyright.html">Copyright</a>
+          <a href="gdpr.html">GDPR</a>
+          <a href="cookies.html">Cookies</a>
+          <a href="eula.html">EULA</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button class="back-top" id="backTop" aria-label="Back to top">↑</button>
+
+  <script>
+    const progress = document.getElementById('progress');
+    const backTop = document.getElementById('backTop');
+    const tocLinks = [...document.querySelectorAll('#toc a')];
+    const sections = [...document.querySelectorAll('.section')];
+    const search = document.getElementById('search');
+
+    function onScroll() {
+      const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+      const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      progress.style.width = height > 0 ? ((scrollTop / height) * 100) + '%' : '0%';
+      backTop.style.display = scrollTop > 600 ? 'grid' : 'none';
+      let activeId = sections[0]?.id;
+      for (const sec of sections) {
+        const top = sec.getBoundingClientRect().top;
+        if (top <= 140) activeId = sec.id;
+      }
+      tocLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + activeId));
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('load', onScroll);
+    backTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+    search.addEventListener('input', () => {
+      const q = search.value.toLowerCase().trim();
+      sections.forEach(sec => {
+        const text = sec.innerText.toLowerCase();
+        sec.style.display = !q || text.includes(q) ? '' : 'none';
+      });
+    });
+  </script>
+</body>
+</html>

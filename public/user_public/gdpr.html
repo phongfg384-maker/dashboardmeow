@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meow Bot · GDPR Notice</title>
+  <meta name="description" content="GDPR notice for Meow Bot." />
+  <meta name="theme-color" content="#5865F2" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="legal.css" />
+</head>
+<body>
+  <div class="top-progress" id="progress"></div>
+  <div class="wrap">
+    <div class="card hero">
+      <div class="hero-inner">
+        <div>
+          <div class="brand-badge"><span class="brand-dot"></span> Meow Legal Center · v1.0</div>
+          <h1>GDPR Notice</h1>
+          <p>Information for users in the EEA/UK regarding data rights.</p>
+          <div class="hero-actions">
+            <a class="btn primary" href="dashboardindex.html">← Back to Dashboard</a>
+            <a class="btn" href="gdpr.html">Refresh page</a>
+            <a class="btn warn" href="#s1">Read policy</a>
+          </div>
+        </div>
+        <div class="meta">
+          <div class="mini"><span class="k">Effective date</span><span class="v">August 7, 2026</span></div>
+          <div class="mini"><span class="k">Last updated</span><span class="v">August 7, 2026</span></div>
+          <div class="mini"><span class="k">Document</span><span class="v">GDPR Notice</span></div>
+          <div class="mini"><span class="k">Platform</span><span class="v">Discord / Dashboard</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="shell">
+      <aside class="card sidebar">
+        <input class="search" id="search" type="search" placeholder="Search this page..." />
+        <h3>On this page</h3>
+        <nav class="toc" id="toc"><a href="#s1">1. Scope</a>
+<a href="#s2">2. Lawful Basis</a>
+<a href="#s3">3. Your Rights</a>
+<a href="#s4">4. Data Minimization</a>
+<a href="#s5">5. Retention</a>
+<a href="#s6">6. International Transfers</a>
+<a href="#s7">7. Requests</a>
+<a href="#s8">8. Contact</a></nav>
+      </aside>
+
+      <main class="card content">
+        <div class="note">This page is written for a Discord bot dashboard. Replace support details or legal wording with your own if needed.</div>
+        <div style="height:14px"></div>
+        <section class="section" id="s1"><h2>1. Scope</h2><p>This notice applies to users in the European Economic Area and, where applicable, the UK.</p></section>
+<section class="section" id="s2"><h2>2. Lawful Basis</h2><p>We process data to provide the Bot, to comply with legal obligations, to protect the service, and where we have a legitimate interest in operating the platform.</p></section>
+<section class="section" id="s3"><h2>3. Your Rights</h2><p>Where applicable, you may request access, correction, deletion, restriction, portability, or objection to certain processing.</p></section>
+<section class="section" id="s4"><h2>4. Data Minimization</h2><p>We aim to collect and retain only data that is necessary to run the Bot and related dashboard features.</p></section>
+<section class="section" id="s5"><h2>5. Retention</h2><p>Retention periods depend on the type of data, its purpose, and legal or security requirements.</p></section>
+<section class="section" id="s6"><h2>6. International Transfers</h2><p>Data may be processed in different regions through infrastructure providers used to operate the service.</p></section>
+<section class="section" id="s7"><h2>7. Requests</h2><p>You can send requests using the support server or dashboard contact details, and we may need to verify your request.</p></section>
+<section class="section" id="s8"><h2>8. Contact</h2><p>For GDPR-related questions, contact the support channel listed on the dashboard.</p></section>
+      </main>
+
+      <div class="footer">
+        <div>© 2026 Meow Bot · Legal Center</div>
+        <div class="footer-links">
+          <a href="tos.html">Terms</a>
+          <a href="privacy.html">Privacy</a>
+          <a href="copyright.html">Copyright</a>
+          <a href="gdpr.html">GDPR</a>
+          <a href="cookies.html">Cookies</a>
+          <a href="eula.html">EULA</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button class="back-top" id="backTop" aria-label="Back to top">↑</button>
+
+  <script>
+    const progress = document.getElementById('progress');
+    const backTop = document.getElementById('backTop');
+    const tocLinks = [...document.querySelectorAll('#toc a')];
+    const sections = [...document.querySelectorAll('.section')];
+    const search = document.getElementById('search');
+
+    function onScroll() {
+      const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+      const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      progress.style.width = height > 0 ? ((scrollTop / height) * 100) + '%' : '0%';
+      backTop.style.display = scrollTop > 600 ? 'grid' : 'none';
+      let activeId = sections[0]?.id;
+      for (const sec of sections) {
+        const top = sec.getBoundingClientRect().top;
+        if (top <= 140) activeId = sec.id;
+      }
+      tocLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + activeId));
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('load', onScroll);
+    backTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+    search.addEventListener('input', () => {
+      const q = search.value.toLowerCase().trim();
+      sections.forEach(sec => {
+        const text = sec.innerText.toLowerCase();
+        sec.style.display = !q || text.includes(q) ? '' : 'none';
+      });
+    });
+  </script>
+</body>
+</html>

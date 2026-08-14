@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "installCommand": "npm install express mongoose connect-mongo express-session node-fetch",
+  "functions": {
+    "api/**/*.js": {
+      "includeFiles": "{config,models,public}/**"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/api/index.js"
+    }
+  ]
+}

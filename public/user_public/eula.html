@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meow Bot · End User License Agreement</title>
+  <meta name="description" content="EULA for Meow Bot." />
+  <meta name="theme-color" content="#5865F2" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="legal.css" />
+</head>
+<body>
+  <div class="top-progress" id="progress"></div>
+  <div class="wrap">
+    <div class="card hero">
+      <div class="hero-inner">
+        <div>
+          <div class="brand-badge"><span class="brand-dot"></span> Meow Legal Center · v1.0</div>
+          <h1>End User License Agreement</h1>
+          <p>License terms for using Meow Bot and the related dashboard.</p>
+          <div class="hero-actions">
+            <a class="btn primary" href="dashboardindex.html">← Back to Dashboard</a>
+            <a class="btn" href="eula.html">Refresh page</a>
+            <a class="btn warn" href="#s1">Read policy</a>
+          </div>
+        </div>
+        <div class="meta">
+          <div class="mini"><span class="k">Effective date</span><span class="v">August 7, 2026</span></div>
+          <div class="mini"><span class="k">Last updated</span><span class="v">August 7, 2026</span></div>
+          <div class="mini"><span class="k">Document</span><span class="v">End User License Agreement</span></div>
+          <div class="mini"><span class="k">Platform</span><span class="v">Discord / Dashboard</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="shell">
+      <aside class="card sidebar">
+        <input class="search" id="search" type="search" placeholder="Search this page..." />
+        <h3>On this page</h3>
+        <nav class="toc" id="toc"><a href="#s1">1. License Grant</a>
+<a href="#s2">2. Restrictions</a>
+<a href="#s3">3. Ownership</a>
+<a href="#s4">4. Updates</a>
+<a href="#s5">5. Third-Party Components</a>
+<a href="#s6">6. Disclaimer</a>
+<a href="#s7">7. Termination</a>
+<a href="#s8">8. Contact</a></nav>
+      </aside>
+
+      <main class="card content">
+        <div class="note">This page is written for a Discord bot dashboard. Replace support details or legal wording with your own if needed.</div>
+        <div style="height:14px"></div>
+        <section class="section" id="s1"><h2>1. License Grant</h2><p>We grant you a limited, revocable, non-exclusive, non-transferable license to use the Bot and dashboard in accordance with these terms.</p></section>
+<section class="section" id="s2"><h2>2. Restrictions</h2><p>You may not reverse engineer, copy, resell, sublicense, modify, or misuse the Bot or dashboard except where permitted by law.</p></section>
+<section class="section" id="s3"><h2>3. Ownership</h2><p>The Bot, dashboard, branding, and related materials remain owned by the developer unless stated otherwise.</p></section>
+<section class="section" id="s4"><h2>4. Updates</h2><p>The Bot may update automatically or change behavior without notice to improve stability, security, or features.</p></section>
+<section class="section" id="s5"><h2>5. Third-Party Components</h2><p>The service may include third-party libraries, APIs, or infrastructure governed by their own license terms.</p></section>
+<section class="section" id="s6"><h2>6. Disclaimer</h2><p>The Bot is provided as is, without warranties of any kind to the fullest extent permitted by law.</p></section>
+<section class="section" id="s7"><h2>7. Termination</h2><p>Your license ends if you stop using the Bot, remove it from your server, or violate these terms.</p></section>
+<section class="section" id="s8"><h2>8. Contact</h2><p>For EULA questions, use the support server or the official dashboard contact details.</p></section>
+      </main>
+
+      <div class="footer">
+        <div>© 2026 Meow Bot · Legal Center</div>
+        <div class="footer-links">
+          <a href="tos.html">Terms</a>
+          <a href="privacy.html">Privacy</a>
+          <a href="copyright.html">Copyright</a>
+          <a href="gdpr.html">GDPR</a>
+          <a href="cookies.html">Cookies</a>
+          <a href="eula.html">EULA</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button class="back-top" id="backTop" aria-label="Back to top">↑</button>
+
+  <script>
+    const progress = document.getElementById('progress');
+    const backTop = document.getElementById('backTop');
+    const tocLinks = [...document.querySelectorAll('#toc a')];
+    const sections = [...document.querySelectorAll('.section')];
+    const search = document.getElementById('search');
+
+    function onScroll() {
+      const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+      const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      progress.style.width = height > 0 ? ((scrollTop / height) * 100) + '%' : '0%';
+      backTop.style.display = scrollTop > 600 ? 'grid' : 'none';
+      let activeId = sections[0]?.id;
+      for (const sec of sections) {
+        const top = sec.getBoundingClientRect().top;
+        if (top <= 140) activeId = sec.id;
+      }
+      tocLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + activeId));
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('load', onScroll);
+    backTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+    search.addEventListener('input', () => {
+      const q = search.value.toLowerCase().trim();
+      sections.forEach(sec => {
+        const text = sec.innerText.toLowerCase();
+        sec.style.display = !q || text.includes(q) ? '' : 'none';
+      });
+    });
+  </script>
+</body>
+</html>

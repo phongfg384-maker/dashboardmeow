@@ -1,0 +1,134 @@
+{
+    "1463162734513225809": {
+        "ncoin": 332,
+        "items": {
+            "diamond": 0,
+            "carp": 0,
+            "stone": 0,
+            "iron": 0,
+            "boot": 1,
+            "salmon": 1,
+            "shark": 0,
+            "auto_fish": 0,
+            "auto_mine": 0,
+            "gold": 0,
+            "ancient": 0,
+            "treasure": 0,
+            "auto_hunt": 11,
+            "squid": 0,
+            "quartz": 2,
+            "emerald": 0,
+            "ruby": 0,
+            "tuna": 0,
+            "clownfish": 1,
+            "sapphire": 0,
+            "whale": 0
+        },
+        "upgrades": {
+            "cancau_pro": true,
+            "cuoc_pro": true,
+            "sung_pro": true
+        },
+        "zoo": {
+            "chicken": 13,
+            "bear": 1,
+            "fox": 8,
+            "monkey": 5,
+            "phoenix": 1,
+            "panda": 1,
+            "rabbit": 10,
+            "deer": 3
+        },
+        "settings": {
+            "disablePing": true
+        }
+    },
+    "1140881874152067104": {
+        "ncoin": 0,
+        "items": {
+            "shark": 0,
+            "boot": 0,
+            "carp": 0,
+            "salmon": 0,
+            "gold": 0,
+            "stone": 0,
+            "iron": 0,
+            "diamond": 0,
+            "treasure": 0,
+            "auto_mine": 0,
+            "auto_fish": 0,
+            "ancient": 0,
+            "auto_hunt": 0,
+            "squid": 0,
+            "quartz": 0,
+            "clownfish": 0,
+            "tuna": 0,
+            "ruby": 0,
+            "sapphire": 0,
+            "emerald": 0,
+            "whale": 0
+        },
+        "upgrades": {
+            "cancau_pro": true,
+            "cuoc_pro": true,
+            "sung_pro": true
+        },
+        "zoo": {
+            "chicken": 82,
+            "rabbit": 46,
+            "tiger": 11,
+            "fox": 36,
+            "dragon": 3,
+            "monkey": 37,
+            "phoenix": 2,
+            "deer": 19,
+            "bear": 16,
+            "panda": 7
+        }
+    },
+    "1143632327340212344": {
+        "ncoin": 0,
+        "items": {
+            "carp": 1
+        }
+    },
+    "1494372197026889769": {
+        "ncoin": 0,
+        "items": {
+            "salmon": 0,
+            "auto_fish": 0,
+            "carp": 0,
+            "boot": 0,
+            "shark": 0,
+            "treasure": 0,
+            "auto_hunt": 0
+        },
+        "upgrades": {
+            "cancau_pro": true
+        },
+        "zoo": {
+            "chicken": 2,
+            "fox": 1,
+            "monkey": 1
+        }
+    },
+    "1412330629206638656": {
+        "items": {
+            "clownfish": 1,
+            "salmon": 1
+        },
+        "upgrades": {}
+    },
+    "1475372566284599347": {
+        "items": {
+            "boot": 1
+        },
+        "upgrades": {}
+    },
+    "1018166135897731103": {
+        "items": {
+            "carp": 1
+        },
+        "upgrades": {}
+    }
+}
