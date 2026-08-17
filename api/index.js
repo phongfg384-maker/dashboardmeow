@@ -33,11 +33,14 @@ mongoose.connect(MONGO_URI)
 
 const app = express();
 const adminKey = String(process.env.DASHBOARD_KEY || "khoideptraivl").trim();
-const BOT_TOKEN = process.env.BOT_TOKEN || "";
+const BOT_TOKEN = process.env.BOT_TOKEN || process.env.TOKEN || process.env.DISCORD_TOKEN || "";
 
 // Helpers for Discord API
 async function discordAPI(endpoint, options = {}) {
-    if (!BOT_TOKEN) throw new Error("Missing BOT_TOKEN");
+    if (!BOT_TOKEN) {
+        console.error("[DISCORD API] Missing BOT_TOKEN/DISCORD_TOKEN environment variable!");
+        throw new Error("Missing BOT_TOKEN environment variable.");
+    }
     const res = await fetch(`https://discord.com/api/v10${endpoint}`, {
         ...options,
         headers: {
@@ -46,7 +49,11 @@ async function discordAPI(endpoint, options = {}) {
             ...options.headers,
         },
     });
-    if (!res.ok) throw new Error(`Discord API Error: ${res.statusText}`);
+    if (!res.ok) {
+        const errText = await res.text().catch(() => "");
+        console.error(`[DISCORD API ERROR] ${res.status} ${res.statusText} on ${endpoint}: ${errText}`);
+        throw new Error(`Discord API Error (${res.status}): ${errText || res.statusText}`);
+    }
     return res.json();
 }
 
@@ -92,19 +99,25 @@ function getChannelLabel(channel, parentName = "") {
   return `• ${name}${suffix}`;
 }
 
-app.use(express.json());
+app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: false }));
 // Use path.join(__dirname, '../public') because this file is in api/
 app.use(express.static(path.join(__dirname, "../public")));
 
 app.set('trust proxy', 1);
 
+const isProduction = process.env.NODE_ENV === 'production';
+
 app.use(session({
     secret: process.env.SESSION_SECRET || 'meow_hub_secret_key_12345',
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({ mongoUrl: MONGO_URI }),
-    cookie: { secure: process.env.NODE_ENV === 'production', maxAge: 24 * 60 * 60 * 1000 }
+    cookie: {
+        secure: isProduction,
+        maxAge: 24 * 60 * 60 * 1000,
+        sameSite: 'lax'
+    }
 }));
 
 function requireAuth(req, res, next) {
@@ -133,16 +146,19 @@ async function getAccessibleGuildIds(userToken) {
     const res = await fetch('https://discord.com/api/users/@me/guilds', {
         headers: { Authorization: `Bearer ${userToken}` },
     });
-    if (!res.ok) throw new Error("discord_guilds_fetch_failed");
+    if (!res.ok) {
+        console.error(`[DISCORD OAUTH] Fetching @me/guilds failed: ${res.status}`);
+        throw new Error("discord_guilds_fetch_failed");
+    }
     const guilds = await res.json();
 
     const guildIds = new Set(
         guilds
             .filter((g) => {
                 const isOwner = g.owner === true;
-                const permissions = parseInt(g.permissions || "0", 10);
-                const hasAdmin = (permissions & 0x8) === 0x8;
-                const hasManageGuild = (permissions & 0x20) === 0x20;
+                const permissions = BigInt(g.permissions || "0");
+                const hasAdmin = (permissions & 8n) === 8n;
+                const hasManageGuild = (permissions & 32n) === 32n;
                 return isOwner || hasAdmin || hasManageGuild;
             })
             .map((g) => String(g.id))
@@ -395,7 +411,7 @@ app.post('/api/guilds/:guildId/ticket-config', requireGuildAccess, async (req, r
 // ========================================================
 const CLIENT_ID = process.env.DISCORD_CLIENT_ID || '1491052906496131296'; 
 const CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET || 'Bj7U3xcyhqzxbVYTgtoo8RGPfHM6BIk4'; 
-const REDIRECT_URI = process.env.DISCORD_REDIRECT_URI || 'https://dashboardmeow.vercel.app/callback'; 
+const REDIRECT_URI = process.env.DISCORD_REDIRECT_URI || 'https://www.meowbot.xyz/callback'; 
 
 app.get('/public/login', (req, res) => {
     const discordAuthUrl = `https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=identify%20guilds`;
@@ -416,7 +432,7 @@ app.get('/callback', async (req, res) => {
         req.session.userToken = tokenData.access_token;
         req.session.save((err) => {
             if (err) console.error("Session save error:", err);
-            res.redirect('/public/dashboard'); 
+            res.redirect('/dashboard'); 
         });
     } catch (error) { res.status(500).send('Failed.'); }
 });
@@ -428,20 +444,26 @@ app.get('/api/user/guilds', async (req, res) => {
         if (!userGuildsResponse.ok) return res.status(500).json({ error: 'Failed to fetch guilds from Discord' });
         
         const guilds = await userGuildsResponse.json();
-        const botGuilds = await discordAPI('/users/@me/guilds').catch(() => []);
-        const botGuildIds = new Set(botGuilds.map(g => g.id));
+        const botGuilds = await discordAPI('/users/@me/guilds').catch((e) => {
+            console.error('[BOT GUILDS FETCH ERROR]', e.message);
+            return [];
+        });
+        const botGuildIds = new Set(botGuilds.map(g => String(g.id)));
         
         const result = guilds.filter(g => {
             const isOwner = g.owner === true;
-            const permissions = parseInt(g.permissions || "0");
-            const hasAdmin = (permissions & 0x8) === 0x8;
-            const hasManageGuild = (permissions & 0x20) === 0x20;
+            const permissions = BigInt(g.permissions || "0");
+            const hasAdmin = (permissions & 8n) === 8n;
+            const hasManageGuild = (permissions & 32n) === 32n;
             return isOwner || hasAdmin || hasManageGuild;
         }).map(g => ({
-            id: g.id, name: g.name, icon: g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png` : null, botInstalled: botGuildIds.has(String(g.id))
+            id: String(g.id), name: g.name, icon: g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png` : null, botInstalled: botGuildIds.has(String(g.id))
         }));
         res.json(result);
-    } catch (error) { res.status(500).json({ error: 'Err' }); }
+    } catch (error) {
+        console.error('[API USER GUILDS ERROR]', error);
+        res.status(500).json({ error: 'Err' });
+    }
 });
 
 app.get('/api/guilds/:guildId/channels', requireGuildAccess, async (req, res) => {
@@ -454,8 +476,25 @@ app.get('/api/guilds/:guildId/channels', requireGuildAccess, async (req, res) =>
 app.get('/api/guilds/:guildId/roles', requireGuildAccess, async (req, res) => {
     try {
         const roles = await discordAPI(`/guilds/${req.params.guildId}/roles`);
-        res.json(roles.filter(r => r.id !== req.params.guildId && r.name !== '@everyone' && !r.managed).map(r => ({ id: r.id, name: r.name, rawPosition: r.position })).sort((a,b)=>b.rawPosition-a.rawPosition));
-    } catch (err) { res.status(500).json({ error: "err" }); }
+        if (!Array.isArray(roles)) {
+            console.error(`[ROLES ERROR] Expected array from Discord but got:`, roles);
+            return res.status(500).json({ error: "Invalid roles response from Discord API" });
+        }
+        const filteredRoles = roles
+            .filter(r => String(r.id) !== String(req.params.guildId) && r.name !== '@everyone')
+            .map(r => ({
+                id: String(r.id),
+                name: r.name,
+                rawPosition: r.position ?? 0,
+                color: r.color,
+                managed: !!r.managed
+            }))
+            .sort((a, b) => b.rawPosition - a.rawPosition);
+        res.json(filteredRoles);
+    } catch (err) {
+        console.error(`[GET ROLES ERROR] Guild ID ${req.params.guildId}:`, err.message);
+        res.status(500).json({ error: err.message || "Failed to fetch roles" });
+    }
 });
 
 // ========================================================
@@ -704,6 +743,431 @@ app.get('/api/guilds/:guildId/warns/:userId', requireGuildAccess, async (req, re
 });
 
 // ========================================================
+// NICKNAME MANAGER (suffix / reset hàng loạt)
+// Lưu ý: server đông thành viên có thể mất vài phút và có nguy cơ
+// bị timeout trên môi trường serverless (Vercel) — dùng lệnh
+// /customlastnick trên Discord cho server rất lớn sẽ ổn định hơn.
+// ========================================================
+const NICKNAME_BATCH_LIMIT = 400; // giới hạn số thành viên xử lý / lần gọi để tránh timeout
+const NICKNAME_RATE_DELAY_MS = 350;
+
+async function fetchGuildMembersPage(guildId, limit = 1000, after = "0") {
+    return discordAPI(`/guilds/${guildId}/members?limit=${limit}&after=${after}`);
+}
+
+app.post('/api/guilds/:guildId/nickname/suffix', requireGuildAccess, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const suffix = normalizeString(req.body.suffix).slice(0, 24);
+        if (!suffix) return res.status(400).json({ error: "suffix_required" });
+
+        const guild = await discordAPI(`/guilds/${guildId}`);
+        const members = await fetchGuildMembersPage(guildId, 1000);
+
+        let success = 0, failed = 0, skipped = 0;
+        let processed = 0;
+        for (const m of members) {
+            if (processed >= NICKNAME_BATCH_LIMIT) break;
+            if (!m.user || m.user.bot || m.user.id === guild.owner_id) { skipped++; continue; }
+            processed++;
+            const base = m.nick || m.user.global_name || m.user.username;
+            let newNick = `${base} ${suffix}`;
+            if (newNick.length > 32) newNick = newNick.slice(0, 32);
+            try {
+                await discordAPI(`/guilds/${guildId}/members/${m.user.id}`, {
+                    method: "PATCH",
+                    body: JSON.stringify({ nick: newNick }),
+                });
+                success++;
+            } catch (e) { failed++; }
+            await new Promise(r => setTimeout(r, NICKNAME_RATE_DELAY_MS));
+        }
+
+        res.json({
+            success: true,
+            data: { updated: success, failed, skipped, totalFetched: members.length, truncated: members.length > NICKNAME_BATCH_LIMIT },
+        });
+    } catch (err) { res.status(500).json({ error: "err", message: err.message }); }
+});
+
+app.post('/api/guilds/:guildId/nickname/reset', requireGuildAccess, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const guild = await discordAPI(`/guilds/${guildId}`);
+        const members = await fetchGuildMembersPage(guildId, 1000);
+
+        let success = 0, failed = 0, skipped = 0;
+        let processed = 0;
+        for (const m of members) {
+            if (processed >= NICKNAME_BATCH_LIMIT) break;
+            if (!m.user || m.user.bot || !m.nick || m.user.id === guild.owner_id) { skipped++; continue; }
+            processed++;
+            try {
+                await discordAPI(`/guilds/${guildId}/members/${m.user.id}`, {
+                    method: "PATCH",
+                    body: JSON.stringify({ nick: null }),
+                });
+                success++;
+            } catch (e) { failed++; }
+            await new Promise(r => setTimeout(r, NICKNAME_RATE_DELAY_MS));
+        }
+
+        res.json({
+            success: true,
+            data: { reset: success, failed, skipped, totalFetched: members.length, truncated: members.length > NICKNAME_BATCH_LIMIT },
+        });
+    } catch (err) { res.status(500).json({ error: "err", message: err.message }); }
+});
+
+// ========================================================
+// EMOJI & STICKER UPLOAD
+// ========================================================
+const EMOJI_MAX_BYTES = 256 * 1024;
+const STICKER_MAX_BYTES = 512 * 1024;
+const UPLOAD_NAME_REGEX = /^[a-zA-Z0-9_]{2,32}$/;
+
+function parseDataUrl(dataUrl) {
+    const match = /^data:(image\/[a-zA-Z+]+);base64,(.+)$/.exec(String(dataUrl || ""));
+    if (!match) return null;
+    const buffer = Buffer.from(match[2], "base64");
+    return { mime: match[1], buffer };
+}
+
+app.post('/api/guilds/:guildId/upload/emoji', requireGuildAccess, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const name = normalizeString(req.body.name);
+        if (!UPLOAD_NAME_REGEX.test(name)) return res.status(400).json({ error: "invalid_name" });
+
+        const parsed = parseDataUrl(req.body.imageDataUrl);
+        if (!parsed) return res.status(400).json({ error: "invalid_image" });
+        if (parsed.buffer.length > EMOJI_MAX_BYTES) return res.status(400).json({ error: "too_large", message: "Emoji tối đa 256 KB." });
+
+        const created = await discordAPI(`/guilds/${guildId}/emojis`, {
+            method: "POST",
+            body: JSON.stringify({ name, image: req.body.imageDataUrl }),
+        });
+        res.json({ success: true, data: created });
+    } catch (err) { res.status(500).json({ error: "err", message: err.message }); }
+});
+
+app.post('/api/guilds/:guildId/upload/sticker', requireGuildAccess, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const name = normalizeString(req.body.name).slice(0, 32);
+        const tags = normalizeString(req.body.tags).slice(0, 200) || "🙂";
+        const description = normalizeString(req.body.description).slice(0, 100) || name;
+        if (name.length < 2) return res.status(400).json({ error: "invalid_name" });
+
+        const parsed = parseDataUrl(req.body.imageDataUrl);
+        if (!parsed) return res.status(400).json({ error: "invalid_image" });
+        if (!["image/png", "image/gif", "image/apng"].includes(parsed.mime)) {
+            return res.status(400).json({ error: "invalid_format", message: "Sticker chỉ nhận PNG hoặc GIF." });
+        }
+        if (parsed.buffer.length > STICKER_MAX_BYTES) return res.status(400).json({ error: "too_large", message: "Sticker tối đa 512 KB." });
+
+        if (!BOT_TOKEN) throw new Error("Missing BOT_TOKEN environment variable.");
+
+        // Discord yêu cầu multipart/form-data cho endpoint sticker (khác với emoji dùng JSON base64),
+        // nên dùng thẳng fetch/FormData/Blob toàn cục của Node 18+ thay vì discordAPI() helper.
+        const form = new FormData();
+        form.append("name", name);
+        form.append("tags", tags);
+        form.append("description", description);
+        form.append("file", new Blob([parsed.buffer], { type: parsed.mime }), `sticker.${parsed.mime.split("/")[1]}`);
+
+        const stickerRes = await globalThis.fetch(`https://discord.com/api/v10/guilds/${guildId}/stickers`, {
+            method: "POST",
+            headers: { Authorization: `Bot ${BOT_TOKEN}` },
+            body: form,
+        });
+        if (!stickerRes.ok) {
+            const errText = await stickerRes.text().catch(() => "");
+            throw new Error(`Discord API Error (${stickerRes.status}): ${errText}`);
+        }
+        const created = await stickerRes.json();
+        res.json({ success: true, data: created });
+    } catch (err) { res.status(500).json({ error: "err", message: err.message }); }
+});
+
+// ========================================================
+// SERVER BACKUP & RESTORE
+// Dùng đúng thuật toán mã hoá (XOR keystream từ SECRET_KEY) như lệnh
+// /backup trên Discord, để 2 bên đọc chung 1 định dạng file .txt.
+// LƯU Ý BẢO MẬT: đây là mã hoá đối xứng yếu (không phải chuẩn AEAD),
+// và SECRET_KEY đang nằm cứng trong mã nguồn công khai — file backup
+// KHÔNG nên coi là "an toàn tuyệt đối" nếu source bị lộ, chỉ nên xem
+// là chống đọc nhầm/đọc lướt qua.
+// ========================================================
+const crypto = require("crypto");
+const BACKUP_SECRET_KEY = "HUiuejrPbUudXS3PhD6VyvucELQmF2jj";
+
+function backupKeystream(length) {
+    const key = crypto.createHash("sha256").update(BACKUP_SECRET_KEY).digest();
+    let out = Buffer.alloc(0);
+    let counter = 0;
+    while (out.length < length) {
+        const counterBuffer = Buffer.alloc(4);
+        counterBuffer.writeUInt32BE(counter, 0);
+        const hash = crypto.createHash("sha256").update(Buffer.concat([key, counterBuffer])).digest();
+        out = Buffer.concat([out, hash]);
+        counter++;
+    }
+    return out.subarray(0, length);
+}
+
+function backupEncrypt(data) {
+    const raw = Buffer.from(data, "utf8");
+    const ks = backupKeystream(raw.length);
+    const encrypted = Buffer.alloc(raw.length);
+    for (let i = 0; i < raw.length; i++) encrypted[i] = raw[i] ^ ks[i];
+    return encrypted.toString("base64");
+}
+
+function backupDecrypt(data) {
+    const raw = Buffer.from(data, "base64");
+    const ks = backupKeystream(raw.length);
+    const decrypted = Buffer.alloc(raw.length);
+    for (let i = 0; i < raw.length; i++) decrypted[i] = raw[i] ^ ks[i];
+    return decrypted.toString("utf8");
+}
+
+async function requireGuildOwner(req, res, next) {
+    try {
+        const guild = await discordAPI(`/guilds/${req.params.guildId}`);
+        const meRes = await globalThis.fetch('https://discord.com/api/users/@me', {
+            headers: { Authorization: `Bearer ${req.session.userToken}` },
+        });
+        const me = await meRes.json();
+        if (String(guild.owner_id) !== String(me.id)) {
+            return res.status(403).json({ error: "owner_only", message: "Chỉ chủ sở hữu server mới được restore backup." });
+        }
+        next();
+    } catch (err) { res.status(500).json({ error: "err" }); }
+}
+
+app.post('/api/guilds/:guildId/backup/create', requireGuildAccess, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const guild = await discordAPI(`/guilds/${guildId}`);
+        const roles = await discordAPI(`/guilds/${guildId}/roles`);
+        const channels = await discordAPI(`/guilds/${guildId}/channels`);
+
+        const backup = { name: guild.name, roles: [], categories: [], channels: [] };
+
+        const roleNameById = new Map(roles.map(r => [r.id, r.name]));
+        roles
+            .filter(r => r.name !== "@everyone" && !r.managed)
+            .sort((a, b) => b.position - a.position)
+            .forEach(r => backup.roles.push({
+                name: r.name, color: r.color, hoist: r.hoist,
+                permissions: String(r.permissions), mentionable: r.mentionable,
+            }));
+
+        const buildPerms = (overwrites) => (overwrites || [])
+            .filter(ow => ow.type === 0) // 0 = role overwrite
+            .map(ow => ({
+                name: ow.id === guildId ? "@everyone" : (roleNameById.get(ow.id) || null),
+                type: "role", allow: ow.allow, deny: ow.deny,
+            }))
+            .filter(p => p.name);
+
+        const categories = channels.filter(c => c.type === 4).sort((a, b) => a.position - b.position);
+        categories.forEach(cat => backup.categories.push({
+            name: cat.name, position: cat.position, permissions: buildPerms(cat.permission_overwrites),
+        }));
+
+        const categoryNameById = new Map(categories.map(c => [c.id, c.name]));
+        channels.filter(c => c.type !== 4).sort((a, b) => a.position - b.position).forEach(ch => backup.channels.push({
+            name: ch.name, type: ch.type, topic: ch.topic || null, nsfw: ch.nsfw || false,
+            bitrate: ch.bitrate || null, userLimit: ch.user_limit || null, rateLimitPerUser: ch.rate_limit_per_user || null,
+            parentName: ch.parent_id ? (categoryNameById.get(ch.parent_id) || null) : null,
+            position: ch.position, permissions: buildPerms(ch.permission_overwrites),
+        }));
+
+        const encrypted = backupEncrypt(JSON.stringify(backup, null, 2));
+        const sanitized = String(guild.name).replace(/[^a-zA-Z0-9_-]/g, "_");
+        res.json({
+            success: true,
+            data: {
+                filename: `backup_${sanitized}_${Date.now()}.txt`,
+                content: encrypted,
+                stats: { roles: backup.roles.length, categories: backup.categories.length, channels: backup.channels.length },
+            },
+        });
+    } catch (err) { res.status(500).json({ error: "err", message: err.message }); }
+});
+
+app.post('/api/guilds/:guildId/backup/restore', requireGuildAccess, requireGuildOwner, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const fileText = normalizeString(req.body.content);
+        if (!fileText) return res.status(400).json({ error: "content_required" });
+
+        let backupData;
+        try {
+            backupData = JSON.parse(backupDecrypt(fileText));
+        } catch (e) {
+            return res.status(400).json({ error: "invalid_backup_file" });
+        }
+        if (!backupData || !Array.isArray(backupData.roles) || !Array.isArray(backupData.channels)) {
+            return res.status(400).json({ error: "corrupted_backup" });
+        }
+
+        const roleIdByName = new Map();
+        for (const r of backupData.roles.slice().reverse()) {
+            try {
+                const created = await discordAPI(`/guilds/${guildId}/roles`, {
+                    method: "POST",
+                    body: JSON.stringify({
+                        name: r.name, color: r.color, hoist: r.hoist,
+                        permissions: r.permissions || "0", mentionable: r.mentionable,
+                    }),
+                });
+                roleIdByName.set(r.name, created.id);
+            } catch (e) {}
+        }
+
+        const resolveOverwrites = (perms) => (perms || [])
+            .map(p => {
+                const id = p.name === "@everyone" ? guildId : roleIdByName.get(p.name);
+                if (!id) return null;
+                return { id, type: 0, allow: p.allow || "0", deny: p.deny || "0" };
+            })
+            .filter(Boolean);
+
+        const categoryIdByName = new Map();
+        if (Array.isArray(backupData.categories)) {
+            for (const cat of backupData.categories) {
+                try {
+                    const created = await discordAPI(`/guilds/${guildId}/channels`, {
+                        method: "POST",
+                        body: JSON.stringify({
+                            name: cat.name, type: 4, position: cat.position,
+                            permission_overwrites: resolveOverwrites(cat.permissions),
+                        }),
+                    });
+                    categoryIdByName.set(cat.name, created.id);
+                } catch (e) {}
+            }
+        }
+
+        let createdChannels = 0, failedChannels = 0;
+        for (const ch of backupData.channels) {
+            try {
+                await discordAPI(`/guilds/${guildId}/channels`, {
+                    method: "POST",
+                    body: JSON.stringify({
+                        name: ch.name, type: ch.type, topic: ch.topic || undefined, nsfw: ch.nsfw || false,
+                        bitrate: ch.bitrate || undefined, user_limit: ch.userLimit || undefined,
+                        rate_limit_per_user: ch.rateLimitPerUser || undefined,
+                        parent_id: ch.parentName ? (categoryIdByName.get(ch.parentName) || undefined) : undefined,
+                        permission_overwrites: resolveOverwrites(ch.permissions),
+                    }),
+                });
+                createdChannels++;
+            } catch (e) { failedChannels++; }
+        }
+
+        res.json({
+            success: true,
+            data: { rolesCreated: roleIdByName.size, categoriesCreated: categoryIdByName.size, channelsCreated: createdChannels, channelsFailed: failedChannels },
+        });
+    } catch (err) { res.status(500).json({ error: "err", message: err.message }); }
+});
+
+// ========================================================
+// HONEYPOT — tạo kênh bẫy tự động
+// ========================================================
+app.post('/api/guilds/:guildId/honeypot', requireGuildAccess, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const channelName = normalizeString(req.body.channelName) || "verify-here";
+        const guild = await discordAPI(`/guilds/${guildId}`);
+
+        const trapChannel = await discordAPI(`/guilds/${guildId}/channels`, {
+            method: "POST",
+            body: JSON.stringify({
+                name: channelName,
+                type: 0,
+                position: 0,
+                topic: "⚠️ HONEYPOT TRAP - DO NOT TALK HERE. Anyone chatting will be banned automatically.",
+                permission_overwrites: [{
+                    id: guildId, type: 0,
+                    allow: String(0x400 | 0x800 | 0x10000), // ViewChannel | SendMessages | ReadMessageHistory
+                    deny: String(0x40),                     // AddReactions
+                }],
+            }),
+        });
+
+        await discordAPI(`/channels/${trapChannel.id}/messages`, {
+            method: "POST",
+            body: JSON.stringify({
+                embeds: [{
+                    title: "🍯 HoneyPot System",
+                    description: `Kênh bẫy đã được thiết lập trên **${guild.name}**!\n\nBất kỳ ai nhắn tin vào <#${trapChannel.id}> sẽ bị **ban tự động ngay lập tức**.`,
+                    color: 0xfea166,
+                }],
+            }),
+        }).catch(() => {});
+
+        res.json({ success: true, data: { channelId: trapChannel.id, channelName: trapChannel.name } });
+    } catch (err) { res.status(500).json({ error: "err", message: err.message }); }
+});
+
+// ========================================================
+// MASS MANAGER — audit sức khoẻ server (chỉ đọc, không thay đổi gì)
+// ========================================================
+app.get('/api/guilds/:guildId/mass-manager/audit', requireGuildAccess, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const [roles, channels, members] = await Promise.all([
+            discordAPI(`/guilds/${guildId}/roles`),
+            discordAPI(`/guilds/${guildId}/channels`),
+            discordAPI(`/guilds/${guildId}/members?limit=1000`),
+        ]);
+
+        const ADMIN_BIT = 0x8n;
+        const adminRoles = roles.filter(r => (BigInt(r.permissions) & ADMIN_BIT) === ADMIN_BIT);
+
+        const textCount = channels.filter(c => c.type === 0).length;
+        const voiceCount = channels.filter(c => c.type === 2).length;
+        const catCount = channels.filter(c => c.type === 4).length;
+
+        const memberCountByRole = new Map();
+        members.forEach(m => (m.roles || []).forEach(rid => memberCountByRole.set(rid, (memberCountByRole.get(rid) || 0) + 1)));
+        const unusedRoles = roles.filter(r => r.name !== "@everyone" && !r.managed && !memberCountByRole.get(r.id));
+
+        const botCount = members.filter(m => m.user && m.user.bot).length;
+
+        // Kiểm tra quyền của chính bot trong server.
+        let missingPerms = [];
+        try {
+            const me = await discordAPI(`/guilds/${guildId}/members/@me`);
+            const perms = (me.roles || []).reduce((acc, rid) => {
+                const role = roles.find(r => r.id === rid);
+                return role ? acc | BigInt(role.permissions) : acc;
+            }, 0n);
+            const NEEDED = { "Manage Roles": 0x10000000n, "Manage Channels": 0x10n, "Kick Members": 0x2n, "Ban Members": 0x4n };
+            missingPerms = Object.entries(NEEDED).filter(([, bit]) => (perms & bit) !== bit).map(([label]) => label);
+        } catch (e) { /* bỏ qua nếu không lấy được */ }
+
+        res.json({
+            success: true,
+            data: {
+                adminRoles: adminRoles.map(r => r.name),
+                channelHealth: { total: channels.length, text: textCount, voice: voiceCount, category: catCount },
+                unusedRoles: unusedRoles.map(r => r.name),
+                botCount,
+                missingPerms,
+                memberSampleSize: members.length,
+                truncated: members.length >= 1000,
+            },
+        });
+    } catch (err) { res.status(500).json({ error: "err", message: err.message }); }
+});
+
+// ========================================================
 // PREMIUM STATUS (chỉ xem trạng thái — nâng cấp Premium do chủ bot xử lý riêng)
 // ========================================================
 app.get('/api/guilds/:guildId/premium', requireGuildAccess, async (req, res) => {
@@ -750,27 +1214,28 @@ app.post('/api/guilds/:guildId/premium', requireGuildAccess, async (req, res) =>
     } catch (err) { res.status(500).json({ error: "err" }); }
 });
 
-// Front-end routes for single-page-app
+// Front-end routes
 const serveIndex = (req, res) => res.sendFile(path.join(__dirname, '../public', 'user_public', 'dashboardindex.html'));
 app.get('/', serveIndex);
-app.get('/dashboard', serveIndex);
 app.get('/landing', serveIndex);
 
 const serveDashboard = (req, res) => res.sendFile(path.join(__dirname, '../public', 'user_public', 'user_index.html'));
-app.get('/public/servers', serveDashboard);
-app.get('/public/dashboard', serveDashboard);
+app.get('/dashboard', serveDashboard);
+app.get(['/public/dashboard', '/public/servers', '/servers'], (req, res) => res.redirect(301, '/dashboard'));
 
 const serveConfig = (req, res) => res.sendFile(path.join(__dirname, '../public', 'config.html'));
-app.get('/public/config.html', serveConfig);
-app.get('/public/config', serveConfig);
+app.get('/config', serveConfig);
+app.get(['/public/config', '/public/config.html'], (req, res) => res.redirect(301, '/config'));
 
-app.get('/user_public/docs.html', (req, res) => res.sendFile(path.join(__dirname, '../public', 'user_public', 'docs.html')));
+const serveDocs = (req, res) => res.sendFile(path.join(__dirname, '../public', 'user_public', 'docs.html'));
+app.get('/docs', serveDocs);
+app.get(['/docs.html', '/user_public/docs.html'], (req, res) => res.redirect(301, '/docs'));
 
 app.get('/logout', (req, res) => {
     if (req.session) {
-        req.session.destroy(() => res.redirect('/dashboard'));
+        req.session.destroy(() => res.redirect('/'));
     } else {
-        res.redirect('/dashboard');
+        res.redirect('/');
     }
 });
 

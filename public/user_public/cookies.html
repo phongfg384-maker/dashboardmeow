@@ -21,7 +21,7 @@
           <h1>Cookie Policy</h1>
           <p>How the dashboard and website may use cookies and similar technologies.</p>
           <div class="hero-actions">
-            <a class="btn primary" href="dashboardindex.html">← Back to Dashboard</a>
+            <a class="btn primary" href="/">← Back to Dashboard</a>
             <a class="btn" href="cookies.html">Refresh page</a>
             <a class="btn warn" href="#s1">Read policy</a>
           </div>
@@ -99,6 +99,20 @@
       }
       tocLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + activeId));
     }
+
+    tocLinks.forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const targetId = link.getAttribute('href').substring(1);
+        const targetEl = document.getElementById(targetId);
+        if (targetEl) {
+          targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          history.pushState(null, null, `#${targetId}`);
+          tocLinks.forEach(a => a.classList.remove('active'));
+          link.classList.add('active');
+        }
+      });
+    });
 
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('load', onScroll);

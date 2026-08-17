@@ -132,7 +132,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="guild-card">
                     ${g.icon ? `<img class="guild-icon" src="${g.icon}">` : `<div class="guild-icon">${g.name.charAt(0)}</div>`}
                     <div class="guild-name">${g.name}</div>
-                    ${g.botInstalled ? `<a href="/public/config.html?guildId=${g.id}" class="btn btn-primary">Manage Server</a>` : `<a href="https://discord.com/api/oauth2/authorize?client_id=1491052906496131296&permissions=8&scope=bot&guild_id=${g.id}" target="_blank" class="btn btn-secondary">Invite Bot</a>`}
+                    ${g.botInstalled ? `<a href="/config?guildId=${g.id}" class="btn btn-primary">Manage Server</a>` : `<a href="https://discord.com/api/oauth2/authorize?client_id=1491052906496131296&permissions=8&scope=bot&guild_id=${g.id}" target="_blank" class="btn btn-secondary">Invite Bot</a>`}
                 </div>
             `).join('');
         }

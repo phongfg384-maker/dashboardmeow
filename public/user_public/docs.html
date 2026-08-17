@@ -5,141 +5,332 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meow Bot - Documentation & Guides</title>
 
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;800&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --primary: #5865F2;
-            --primary-hover: #4752C4;
-            --bg-dark: #1e1f22;
-            --bg-sidebar: #2b2d31;
-            --bg-card: #313338;
-            --bg-hover: #3f4147;
-            --text-light: #f2f3f5;
-            --text-muted: #b5bac1;
-            --code-bg: #111214;
+            --brand-orange: #FEA166;
+            --brand-orange-bright: #FF8F3D;
+            --brand-orange-glow: rgba(254, 161, 102, 0.45);
+            --brand-orange-bg: rgba(254, 161, 102, 0.1);
+            --brand-orange-border: rgba(254, 161, 102, 0.28);
+
+            --bg-body: #06080c;
+            --bg-sidebar: rgba(11, 14, 22, 0.85);
+            --bg-card: rgba(18, 22, 34, 0.65);
+            --bg-card-hover: rgba(26, 32, 48, 0.85);
+            --bg-surface: rgba(30, 37, 56, 0.6);
+            --bg-input: rgba(13, 16, 25, 0.85);
+            --code-bg: rgba(10, 13, 20, 0.95);
+
+            --text-white: #ffffff;
+            --text-primary: #f2f4f8;
+            --text-secondary: #9aa5b8;
+            --text-muted: #5e687b;
+
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --border-glass-hover: rgba(254, 161, 102, 0.45);
+
+            --radius-sm: 10px;
+            --radius-md: 16px;
+            --radius-lg: 24px;
+            --radius-full: 9999px;
+
+            --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background-color: var(--bg-dark); color: var(--text-light); display: flex; height: 100vh; overflow: hidden; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-font-smoothing: antialiased; }
+        body { background-color: var(--bg-body); color: var(--text-primary); display: flex; height: 100vh; overflow: hidden; position: relative; }
 
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: var(--bg-dark); }
-        ::-webkit-scrollbar-thumb { background: #1a1b1e; border-radius: 4px; }
+        #bg-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.85;
+        }
 
-        /* Sidebar Tài Liệu */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(254, 161, 102, 0.25); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--brand-orange); }
+
+        /* Sidebar */
         .docs-sidebar {
-            width: 300px;
-            background-color: var(--bg-sidebar);
+            width: 290px;
+            background: var(--bg-sidebar);
+            backdrop-filter: blur(24px);
             display: flex;
             flex-direction: column;
             flex-shrink: 0;
-            border-right: 1px solid #1f2124;
-            padding: 20px;
+            border-right: 1px solid var(--border-glass);
+            padding: 20px 14px;
             overflow-y: auto;
+            z-index: 10;
         }
 
-        .brand { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 18px; color: #fff; text-decoration: none; margin-bottom: 25px; }
-        .brand img { width: 36px; height: 36px; object-fit: cover; }
+        .brand-card {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            padding: 12px 16px;
+            min-height: 68px;
+            flex-shrink: 0;
+            background: rgba(18, 22, 34, 0.75);
+            border: 1px solid var(--brand-orange-border);
+            border-radius: var(--radius-md);
+            text-decoration: none;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            transition: all 0.25s var(--ease-spring);
+            position: relative;
+        }
+        .brand-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--brand-orange);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6), 0 0 20px var(--brand-orange-glow);
+            background: rgba(26, 32, 48, 0.85);
+        }
+        .brand-avatar-box {
+            position: relative;
+            width: 44px;
+            height: 44px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .brand-avatar-box img {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            object-fit: cover;
+            border: none;
+            box-shadow: none;
+            transition: transform 0.3s var(--ease-spring);
+            display: block;
+        }
+        .brand-card:hover .brand-avatar-box img {
+            transform: scale(1.08) rotate(-4deg);
+        }
+        .online-indicator {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            width: 11px;
+            height: 11px;
+            background: #23a55a;
+            border: 2px solid #0b0e16;
+            border-radius: 50%;
+            box-shadow: 0 0 8px rgba(35, 165, 90, 0.8);
+            z-index: 2;
+        }
+        .brand-info {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            min-width: 0;
+            justify-content: center;
+        }
+        .brand-title {
+            font-size: 16px;
+            font-weight: 900;
+            color: #ffffff;
+            letter-spacing: -0.3px;
+            line-height: 1.25;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .brand-badge-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11.5px;
+            font-weight: 800;
+            color: var(--brand-orange);
+            line-height: 1.2;
+            letter-spacing: 0.3px;
+        }
+        .badge-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--brand-orange);
+            box-shadow: 0 0 8px var(--brand-orange-glow);
+            flex-shrink: 0;
+        }
 
-        .docs-menu-category { font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1px; margin-bottom: 10px; margin-top: 20px; }
-        .docs-menu { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+        .docs-menu-category {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 0.8px;
+            margin-bottom: 8px;
+            margin-top: 18px;
+            padding-left: 10px;
+        }
+        .docs-menu { list-style: none; display: flex; flex-direction: column; gap: 3px; }
         .docs-menu li a {
             display: block;
             padding: 9px 12px;
-            border-radius: 6px;
-            color: var(--text-muted);
+            border-radius: var(--radius-sm);
+            color: var(--text-secondary);
             text-decoration: none;
-            font-size: 14px;
-            font-weight: 500;
-            transition: 0.2s;
+            font-size: 13.5px;
+            font-weight: 700;
+            transition: all 0.2s var(--ease-smooth);
         }
-        .docs-menu li a:hover, .docs-menu li a.active { background-color: var(--bg-hover); color: #fff; }
+        .docs-menu li a:hover { background: rgba(255,255,255,0.05); color: #fff; transform: translateX(3px); }
+        .docs-menu li a.active {
+            background: linear-gradient(90deg, rgba(254, 161, 102, 0.22) 0%, rgba(254, 161, 102, 0.04) 100%);
+            color: #fff;
+            border-left: 3px solid var(--brand-orange);
+        }
 
-        /* Nội dung chính */
+        /* Main Area */
         .docs-main {
             flex: 1;
             display: flex;
             flex-direction: column;
             overflow-y: auto;
-            background-color: var(--bg-dark);
+            background-color: var(--bg-body);
+            position: relative;
+            z-index: 1;
         }
 
-        /* 🌟 BANNER XANH GRADIENT */
         .config-banner {
-            background: linear-gradient(135deg, #7289da 0%, #5865F2 100%);
-            padding: 35px 50px;
+            background: linear-gradient(135deg, rgba(254, 161, 102, 0.15) 0%, rgba(255, 143, 61, 0.05) 100%);
+            border-bottom: 1px solid var(--brand-orange-border);
+            padding: 28px 48px;
             color: #fff;
-            clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
             flex-shrink: 0;
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
+            align-items: center;
+            backdrop-filter: blur(14px);
         }
-        .config-banner h1 { font-size: 2rem; font-weight: 900; text-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 5px; }
-        .config-banner p { font-size: 0.95rem; opacity: 0.9; }
+        .config-banner h1 { font-size: 24px; font-weight: 900; color: #fff; margin-bottom: 4px; }
+        .config-banner p { font-size: 14px; color: var(--text-secondary); }
 
-        /* Cụm điều khiển ở góc phải banner */
         .banner-right {
             display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 8px;
+            align-items: center;
+            gap: 12px;
         }
 
         .back-home {
-            color: #fff; text-decoration: none; font-weight: 600; font-size: 13px;
-            background: rgba(0,0,0,0.25); padding: 8px 16px; border-radius: 8px;
-            border: 1px solid rgba(255,255,255,0.2); transition: 0.2s; display: inline-block;
+            color: #fff;
+            text-decoration: none;
+            font-weight: 800;
+            font-size: 13px;
+            background: var(--bg-card);
+            padding: 9px 18px;
+            border-radius: var(--radius-full);
+            border: 1px solid var(--border-glass);
+            transition: all 0.25s var(--ease-spring);
         }
-        .back-home:hover { background: rgba(0,0,0,0.4); }
+        .back-home:hover {
+            background: rgba(255,255,255,0.12);
+            border-color: var(--brand-orange);
+            transform: translateY(-2px);
+        }
 
-        .lang-switcher { display: flex; gap: 6px; align-items: center; }
-        .lang-btn {
-            background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.2);
-            color: #fff; padding: 4px 10px; border-radius: 6px; cursor: pointer;
-            font-weight: 600; font-size: 11px; transition: 0.2s;
+        .lang-switcher {
+            display: flex;
+            gap: 4px;
+            background: rgba(255,255,255,0.05);
+            padding: 4px;
+            border-radius: var(--radius-full);
+            border: 1px solid var(--border-glass);
         }
-        .lang-btn.active, .lang-btn:hover { background: #fff; color: var(--primary); }
+        .lang-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 5px 12px;
+            border-radius: var(--radius-full);
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 11px;
+            transition: 0.2s;
+        }
+        .lang-btn.active, .lang-btn:hover { background: var(--brand-orange); color: #06080c; }
 
         .docs-content {
-            padding: 20px 50px 50px 50px;
+            padding: 34px 48px 60px;
             flex: 1;
         }
 
-        .doc-section { display: none; animation: fadeIn 0.3s ease; max-width: 850px; }
+        .doc-section { display: none; animation: fadeIn 0.3s var(--ease-smooth); max-width: 900px; }
         .doc-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .doc-section h2 { font-size: 1.8rem; font-weight: 800; color: #fff; margin-bottom: 15px; }
-        .doc-section h3 { font-size: 1.3rem; font-weight: 700; color: #fff; margin-top: 25px; margin-bottom: 10px; }
-        .doc-section p { color: var(--text-muted); line-height: 1.7; font-size: 15px; margin-bottom: 15px; }
+        .doc-section h2 { font-size: 26px; font-weight: 900; color: #fff; margin-bottom: 16px; }
+        .doc-section h3 { font-size: 18px; font-weight: 800; color: var(--brand-orange); margin-top: 28px; margin-bottom: 10px; }
+        .doc-section p { color: var(--text-secondary); line-height: 1.7; font-size: 14.5px; margin-bottom: 16px; }
 
-        .doc-box { background: var(--bg-card); padding: 20px; border-radius: 10px; border-left: 4px solid var(--primary); margin: 20px 0; border: 1px solid #1f2124; }
-        .doc-box p { margin: 0; color: var(--text-light); }
+        .doc-box {
+            background: var(--bg-card);
+            backdrop-filter: blur(14px);
+            padding: 22px;
+            border-radius: var(--radius-md);
+            border-left: 4px solid var(--brand-orange);
+            margin: 22px 0;
+            border: 1px solid var(--border-glass);
+            border-left: 4px solid var(--brand-orange);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+        .doc-box p { margin: 0; color: #fff; font-size: 14px; }
 
-        .badge { background: rgba(88, 101, 242, 0.2); color: var(--primary); padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+        .badge {
+            background: var(--brand-orange-bg);
+            color: var(--brand-orange);
+            border: 1px solid var(--brand-orange-border);
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+        }
 
-        pre { background: var(--code-bg); padding: 15px; border-radius: 8px; border: 1px solid #3f4147; overflow-x: auto; margin: 15px 0; }
-        code { font-family: monospace; color: #58ccf2; font-size: 14px; }
+        pre {
+            background: var(--code-bg);
+            padding: 16px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-glass);
+            overflow-x: auto;
+            margin: 16px 0;
+        }
+        code { font-family: 'JetBrains Mono', monospace; color: var(--brand-orange); font-size: 13.5px; }
 
         @media (max-width: 768px) {
             body { flex-direction: column; height: auto; overflow: auto; }
             .docs-sidebar { width: 100%; height: auto; }
             .docs-content { padding: 20px; }
-            .config-banner { flex-direction: column; align-items: flex-start; gap: 15px; padding: 25px 20px; }
+            .config-banner { flex-direction: column; align-items: flex-start; gap: 15px; padding: 20px; }
             .banner-right { align-items: flex-start; width: 100%; }
         }
     </style>
 </head>
 <body>
+    <canvas id="bg-canvas"></canvas>
 
     <!-- SIDEBAR NAVIGATION -->
     <nav class="docs-sidebar">
-        <a href="/" class="brand">
-            <img src="/user_public/meow-logo.png" onerror="this.src='https://cdn.discordapp.com/embed/avatars/1.png';">
-            Meow Docs v1.9
+        <a href="/" class="brand-card">
+            <div class="brand-avatar-box">
+                <img src="/user_public/meow-logo.png" onerror="this.src='https://cdn.discordapp.com/embed/avatars/1.png';" alt="Meow Docs">
+                <span class="online-indicator"></span>
+            </div>
+            <div class="brand-info">
+                <span class="brand-title">Meow Docs</span>
+                <span class="brand-badge-tag"><span class="badge-dot"></span> Online</span>
+            </div>
         </a>
 
         <div class="docs-menu-category" data-i18n="cat_start">Bắt đầu</div>
@@ -195,7 +386,7 @@
             </div>
 
             <div class="banner-right">
-                <a href="dashboardindex.html" class="back-home" data-i18n="back_home">Về trang chủ</a>
+                <a href="/" class="back-home" data-i18n="back_home">Về trang chủ</a>
                 <div class="lang-switcher">
                     <button class="lang-btn active" onclick="setLanguage('vi')">🇻🇳 VI</button>
                     <button class="lang-btn" onclick="setLanguage('en')">🇬🇧 EN</button>
@@ -209,7 +400,7 @@
                 <h2 data-i18n="intro_h2">Chào mừng đến với Meow Bot Documentation</h2>
                 <p data-i18n="intro_p1"><strong>Meow Bot</strong> là hệ thống bot Discord All-in-One hiện đại kết hợp Web Dashboard trực quan phiên bản 1.9. Được thiết kế để quản lý toàn diện, tự động hóa máy chủ cộng đồng và tích hợp hàng loạt các tiện ích phát triển cao cấp.</p>
                 <div class="doc-box">
-                    <p>💡 <span data-i18n="intro_tip">Gợi ý: Bạn có thể dễ dàng quản lý mọi tính năng của bot theo thời gian thực trực tiếp tại giao diện</span> <a href="/landing" style="color:var(--primary); text-decoration:none; font-weight:600;">Web Dashboard</a>.</p>
+                    <p>💡 <span data-i18n="intro_tip">Gợi ý: Bạn có thể dễ dàng quản lý mọi tính năng của bot theo thời gian thực trực tiếp tại giao diện</span> <a href="/dashboard" style="color:var(--primary); text-decoration:none; font-weight:600;">Web Dashboard</a>.</p>
                 </div>
                 <h3 data-i18n="intro_h3">Điểm nổi bật</h3>
                 <p data-i18n="intro_feat1">• Giao diện tối sang trọng chuẩn phong cách Discord (<span class="badge">Dark Theme</span>).</p>
@@ -780,6 +971,41 @@
             }
             return false;
         }
+
+        // Canvas Aurora
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        });
+
+        const orbs = [
+            { x: width * 0.3, y: height * 0.3, r: 380, color: 'rgba(254, 161, 102, 0.08)', vx: 0.25, vy: 0.2 },
+            { x: width * 0.7, y: height * 0.7, r: 400, color: 'rgba(254, 161, 102, 0.06)', vx: -0.2, vy: -0.15 }
+        ];
+
+        function renderAurora() {
+            ctx.clearRect(0, 0, width, height);
+            for (let orb of orbs) {
+                orb.x += orb.vx; orb.y += orb.vy;
+                if (orb.x < -100 || orb.x > width + 100) orb.vx *= -1;
+                if (orb.y < -100 || orb.y > height + 100) orb.vy *= -1;
+
+                const grad = ctx.createRadialGradient(orb.x, orb.y, 0, orb.x, orb.y, orb.r);
+                grad.addColorStop(0, orb.color);
+                grad.addColorStop(1, 'transparent');
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(orb.x, orb.y, orb.r, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            requestAnimationFrame(renderAurora);
+        }
+        renderAurora();
 
         document.addEventListener('DOMContentLoaded', () => applyLanguage(currentLang));
     </script>

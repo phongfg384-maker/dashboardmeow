@@ -3,240 +3,442 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meow Dashboard - Máy Chủ</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>Meow Dashboard - Chọn Máy Chủ</title>
+    <link rel="icon" type="image/png" href="/user_public/meow-logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;800&display=swap" rel="stylesheet">
+    
     <style>
         :root {
-            --bg-base: #1e1f22;
-            --bg-sidebar: #2b2d31;
-            --bg-card: #313338;
-            --bg-hover: #3f4147;
-            --accent: #5865F2;
-            --accent-hover: #4752c4;
-            --text-normal: #dbdee1;
-            --text-muted: #949ba4;
-            --text-header: #f2f3f5;
-            --danger: #da373c;
-            --success: #23a559;
+            --brand-orange: #FEA166;
+            --brand-orange-bright: #FF8F3D;
+            --brand-orange-glow: rgba(254, 161, 102, 0.45);
+            --brand-orange-bg: rgba(254, 161, 102, 0.1);
+            --brand-orange-border: rgba(254, 161, 102, 0.28);
+
+            --bg-body: #06080c;
+            --bg-sidebar: rgba(11, 14, 22, 0.85);
+            --bg-card: rgba(18, 22, 34, 0.65);
+            --bg-card-hover: rgba(26, 32, 48, 0.85);
+            --bg-surface: rgba(30, 37, 56, 0.6);
+            --bg-input: rgba(13, 16, 25, 0.85);
+
+            --text-white: #ffffff;
+            --text-primary: #f2f4f8;
+            --text-secondary: #9aa5b8;
+            --text-muted: #5e687b;
+
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --border-glass-hover: rgba(254, 161, 102, 0.45);
+
+            --radius-sm: 10px;
+            --radius-md: 16px;
+            --radius-lg: 24px;
+            --radius-full: 9999px;
+
+            --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        * { 
-            box-sizing: border-box; 
-            margin: 0; 
-            padding: 0; 
-            font-family: 'Inter', sans-serif; 
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-font-smoothing: antialiased;
         }
 
-        body { 
-            background-color: var(--bg-base); 
-            color: var(--text-normal); 
-            display: flex; 
-            height: 100vh; 
-            overflow: hidden; 
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
         }
 
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: var(--bg-base); }
-        ::-webkit-scrollbar-thumb { background: #1a1b1e; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #111214; }
+        #bg-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.85;
+        }
+
+        /* Spotlight Effect */
+        .spotlight-card {
+            position: relative;
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-lg);
+            transition: all 0.35s var(--ease-smooth);
+            overflow: hidden;
+        }
+        .spotlight-card::before {
+            content: '';
+            position: absolute;
+            top: var(--mouse-y, -200px);
+            left: var(--mouse-x, -200px);
+            width: 320px;
+            height: 320px;
+            background: radial-gradient(circle, var(--brand-orange-glow) 0%, transparent 70%);
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .spotlight-card:hover::before { opacity: 0.45; }
+        .spotlight-card:hover {
+            border-color: var(--border-glass-hover);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6), 0 0 30px var(--brand-orange-bg);
+        }
+
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-40px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes slideInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes cardFadeUp {
+            from { opacity: 0; transform: translateY(35px) scale(0.96); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes auroraEntrance {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 0.85; transform: scale(1); }
+        }
+
+        #bg-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.85;
+            animation: auroraEntrance 1.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(254, 161, 102, 0.25); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--brand-orange); }
 
         .sidebar {
-            width: 260px;
-            background-color: var(--bg-sidebar);
+            width: 270px;
+            background: var(--bg-sidebar);
+            backdrop-filter: blur(24px);
             display: flex;
             flex-direction: column;
             flex-shrink: 0;
-            border-right: 1px solid #1f2124;
-            padding-bottom: 20px; /* Thêm padding dưới cùng */
+            border-right: 1px solid var(--border-glass);
+            padding: 20px 14px;
+            z-index: 10;
+            animation: slideInLeft 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
         }
 
-        .brand {
-            height: 70px;
+        .brand-card {
             display: flex;
             align-items: center;
-            padding: 0 20px;
-            border-bottom: 1px solid #1f2124;
-            gap: 12px;
+            gap: 13px;
+            padding: 12px 16px;
+            min-height: 68px;
+            flex-shrink: 0;
+            background: rgba(18, 22, 34, 0.75);
+            border: 1px solid var(--brand-orange-border);
+            border-radius: var(--radius-md);
             text-decoration: none;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            transition: all 0.25s var(--ease-spring);
+            position: relative;
         }
-
-        .brand img {
-            width: 36px;
-            height: 36px;
+        .brand-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--brand-orange);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6), 0 0 20px var(--brand-orange-glow);
+            background: rgba(26, 32, 48, 0.85);
+        }
+        .brand-avatar-box {
+            position: relative;
+            width: 44px;
+            height: 44px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .brand-avatar-box img {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
             object-fit: cover;
+            border: none;
+            box-shadow: none;
+            transition: transform 0.3s var(--ease-spring);
+            display: block;
         }
-
-        .brand span {
-            font-size: 15px;
+        .brand-card:hover .brand-avatar-box img {
+            transform: scale(1.08) rotate(-4deg);
+        }
+        .online-indicator {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            width: 11px;
+            height: 11px;
+            background: #23a55a;
+            border: 2px solid #0b0e16;
+            border-radius: 50%;
+            box-shadow: 0 0 8px rgba(35, 165, 90, 0.8);
+            z-index: 2;
+        }
+        .brand-info {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            min-width: 0;
+            justify-content: center;
+        }
+        .brand-title {
+            font-size: 16px;
+            font-weight: 900;
+            color: #ffffff;
+            letter-spacing: -0.3px;
+            line-height: 1.25;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .brand-badge-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11.5px;
             font-weight: 800;
-            color: var(--text-header);
-            letter-spacing: 0.5px;
+            color: var(--brand-orange);
+            line-height: 1.2;
+            letter-spacing: 0.3px;
+        }
+        .badge-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--brand-orange);
+            box-shadow: 0 0 8px var(--brand-orange-glow);
+            flex-shrink: 0;
         }
 
         .menu {
             list-style: none;
-            padding: 15px 10px;
-            /* Bỏ flex: 1 ở đây để margin-top: auto của player hoạt động tốt hơn */
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
         }
-
         .menu li {
-            padding: 10px 12px;
-            margin-bottom: 4px;
-            border-radius: 6px;
+            padding: 11px 14px;
+            border-radius: var(--radius-sm);
             cursor: pointer;
-            color: var(--text-muted);
-            font-weight: 500;
-            font-size: 14.5px;
+            color: var(--text-secondary);
+            font-weight: 700;
+            font-size: 14px;
             display: flex;
             align-items: center;
             gap: 12px;
-            transition: all 0.2s;
+            transition: all 0.25s ease;
+        }
+        .menu li:hover {
+            background: rgba(255,255,255,0.05);
+            color: #ffffff;
+            transform: translateX(3px);
+        }
+        .menu li.active {
+            background: linear-gradient(90deg, rgba(254, 161, 102, 0.22) 0%, rgba(254, 161, 102, 0.04) 100%);
+            color: #ffffff;
+            border-left: 3px solid var(--brand-orange);
         }
 
-        .menu li:hover { background-color: var(--bg-hover); color: var(--text-normal); }
-        .menu li.active { background-color: var(--accent); color: #fff; }
-
-        /* --- 🎵 CSS CHO TRÌNH PHÁT NHẠC --- */
+        /* 🎵 Music Player */
         .music-player {
-            margin-top: auto; /* Tự động đẩy xuống sát đáy sidebar */
-            margin-left: 10px;
-            margin-right: 10px;
-            background-color: var(--bg-card);
-            border-radius: 8px;
-            padding: 12px;
+            margin-top: auto;
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            border-radius: var(--radius-md);
+            padding: 14px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            border: 1px solid #1f2124;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            border: 1px solid var(--brand-orange-border);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4), 0 0 20px var(--brand-orange-bg);
         }
-
         .player-info {
             display: flex;
             align-items: center;
             gap: 10px;
             overflow: hidden;
         }
-
         .player-icon {
-            background: linear-gradient(135deg, var(--accent), #eb459e);
-            min-width: 35px;
-            height: 35px;
-            border-radius: 8px;
+            background: linear-gradient(135deg, #FEA166 0%, #FF8533 100%);
+            color: #06080c;
+            min-width: 38px;
+            height: 38px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 16px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            font-size: 18px;
+            box-shadow: 0 4px 12px var(--brand-orange-glow);
+            transition: all 0.3s;
         }
-
-        .track-info {
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .track-name {
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--text-header);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .track-status {
-            font-size: 11px;
-            color: var(--text-muted);
-            margin-top: 2px;
-        }
-
+        .track-info { display: flex; flex-direction: column; overflow: hidden; }
+        .track-name { font-size: 13px; font-weight: 800; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .track-status { font-size: 11px; color: var(--brand-orange); font-weight: 700; margin-top: 2px; }
         .play-btn {
-            background-color: var(--bg-hover);
-            border: none;
-            color: var(--text-header);
-            width: 32px;
-            height: 32px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid var(--border-glass);
+            color: #fff;
+            width: 34px; height: 34px;
             border-radius: 50%;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 12px;
-            transition: 0.2s;
+            transition: all 0.25s var(--ease-spring);
         }
-
         .play-btn:hover {
-            background-color: var(--accent);
-            color: #fff;
-            transform: scale(1.05);
+            background: var(--brand-orange);
+            color: #06080c;
+            transform: scale(1.1);
         }
-        
-        /* Hiệu ứng đĩa than quay khi đang phát nhạc */
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-        .playing .player-icon { animation: spin 4s linear infinite; border-radius: 50%; }
+        @keyframes spinDisk { 100% { transform: rotate(360deg); } }
+        .playing .player-icon { animation: spinDisk 4s linear infinite; border-radius: 50%; }
 
-        /* Khung nội dung chính */
-        .main { 
-            flex: 1; 
-            padding: 40px; 
-            overflow-y: auto; 
-            background-color: var(--bg-base);
+        /* Main Workspace */
+        .main {
+            flex: 1;
+            padding: 48px;
+            overflow-y: auto;
+            position: relative;
+            z-index: 1;
         }
 
-        .title { margin-bottom: 30px; border-bottom: 1px solid #3f4147; padding-bottom: 16px; }
-        .title h2 { color: var(--text-header); margin-bottom: 8px; font-size: 24px; font-weight: 700; }
-        .title p { color: var(--text-muted); font-size: 14px; }
-        
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .title {
+            margin-bottom: 34px;
+            border-bottom: 1px solid var(--border-glass);
+            padding-bottom: 20px;
+            animation: slideInDown 0.6s 0.1s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        .title h2 { color: #fff; margin-bottom: 6px; font-size: 28px; font-weight: 900; }
+        .title p { color: var(--text-secondary); font-size: 14.5px; }
 
-        .card { 
-            background: var(--bg-card); 
-            padding: 24px; 
-            border-radius: 12px; 
-            text-align: center; 
-            border: 1px solid #1f2124; 
-            transition: 0.2s; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+            gap: 24px;
+        }
+
+        .card {
+            padding: 28px;
+            text-align: center;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
+        .card img {
+            width: 82px;
+            height: 82px;
+            border-radius: 26px;
+            margin-bottom: 18px;
+            object-fit: cover;
+            background: var(--bg-card);
+            box-shadow: 0 8px 24px var(--brand-orange-glow);
+            transition: transform 0.35s var(--ease-spring);
+        }
+        .card:hover img {
+            transform: scale(1.1) rotate(4deg);
+        }
 
-        .card:hover { border-color: var(--accent); transform: translateY(-4px); }
-        .card img { width: 75px; height: 75px; border-radius: 24px; margin-bottom: 16px; object-fit: cover; background: var(--bg-base); }
-        
-        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; width: 100%; color: #fff; transition: 0.2s; }
-        .btn-primary { background: var(--accent); }
-        .btn-primary:hover { background: var(--accent-hover); }
-        .btn-secondary { background: var(--bg-hover); color: var(--text-header); }
-        .btn-secondary:hover { background: #4e5058; }
-
-        @media (max-width: 768px) {
-            .sidebar { position: fixed; left: -260px; z-index: 1000; height: 100%; }
-            .sidebar.active { left: 0; }
-            .main { padding: 20px; }
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border-radius: var(--radius-full);
+            text-decoration: none;
+            font-weight: 800;
+            font-size: 13.5px;
+            width: 100%;
+            transition: all 0.25s var(--ease-spring);
+            border: none;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #FEA166 0%, #FF8533 100%);
+            color: #06080c;
+            box-shadow: 0 6px 20px var(--brand-orange-glow);
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 28px rgba(254, 161, 102, 0.6);
+            color: #000;
+        }
+        .btn-secondary {
+            background: rgba(255,255,255,0.06);
+            color: #ffffff;
+            border: 1px solid var(--border-glass);
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.12);
+            border-color: var(--brand-orange);
+            transform: translateY(-2px);
         }
     </style>
 </head>
 <body>
+    <canvas id="bg-canvas"></canvas>
+
     <nav class="sidebar">
-        <a href="/dashboard" class="brand">
-            <img src="/user_public/meow-logo.png" onerror="this.src='https://cdn.discordapp.com/embed/avatars/1.png';">
-            <span>MEOW DASHBOARD</span>
+        <a href="/" class="brand-card">
+            <div class="brand-avatar-box">
+                <img src="/user_public/meow-logo.png" onerror="this.src='https://cdn.discordapp.com/embed/avatars/1.png';" alt="Meow Bot">
+                <span class="online-indicator"></span>
+            </div>
+            <div class="brand-info">
+                <span class="brand-title">Meow Dashboard</span>
+                <span class="brand-badge-tag"><span class="badge-dot"></span> Online</span>
+            </div>
         </a>
         <ul class="menu">
             <li class="active">🎛️ Danh sách Server</li>
             <li>
-                <a href="/dashboard" style="color: inherit; text-decoration: none; display: flex; align-items: center; gap: 10px; width: 100%;">
+                <a href="/" style="color: inherit; text-decoration: none; display: flex; align-items: center; gap: 10px; width: 100%;">
                     🏠 Về Trang Chủ
+                </a>
+            </li>
+            <li>
+                <a href="/docs" style="color: inherit; text-decoration: none; display: flex; align-items: center; gap: 10px; width: 100%;">
+                    📖 Tài liệu Docs
+                </a>
+            </li>
+            <li>
+                <a href="/logout" style="color: #f23f43; text-decoration: none; display: flex; align-items: center; gap: 10px; width: 100%;">
+                    🚪 Đăng xuất
                 </a>
             </li>
         </ul>
 
-        <!-- 🎵 THÊM KHỐI TRÌNH PHÁT NHẠC VÀO ĐÂY -->
+        <!-- 🎵 Trình phát nhạc -->
         <div class="music-player" id="music-player">
-            <!-- Đổi link mp3 ở phần src="" bên dưới thành bài nhạc bạn thích -->
             <audio id="bgm-audio" loop preload="none">
                 <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3" type="audio/mpeg">
             </audio>
@@ -255,20 +457,62 @@
     <div class="main">
         <div class="title">
             <h2>Máy chủ của bạn</h2>
-            <p>Chọn một máy chủ để bắt đầu cấu hình các tính năng của bot.</p>
+            <p>Chọn một máy chủ bạn có quyền Quản trị để bắt đầu cấu hình các tính năng của bot.</p>
         </div>
-        <div id="loading" style="color: var(--text-muted); font-size: 15px; padding: 20px 0;">Đang kết nối với Discord để lấy danh sách máy chủ...</div>
+        <div id="loading" style="color: var(--brand-orange); font-size: 15px; font-weight:700; padding: 20px 0;">🐾 Đang kết nối với Discord để lấy danh sách máy chủ...</div>
         <div class="grid" id="guild-grid"></div>
     </div>
 
     <script>
-        // --- SCRIPT XỬ LÝ NHẠC ---
+        // Canvas Aurora
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        });
+
+        const orbs = [
+            { x: width * 0.25, y: height * 0.3, r: 380, color: 'rgba(254, 161, 102, 0.08)', vx: 0.25, vy: 0.2 },
+            { x: width * 0.75, y: height * 0.7, r: 420, color: 'rgba(254, 161, 102, 0.06)', vx: -0.2, vy: -0.15 }
+        ];
+
+        function renderAurora() {
+            ctx.clearRect(0, 0, width, height);
+            for (let orb of orbs) {
+                orb.x += orb.vx; orb.y += orb.vy;
+                if (orb.x < -100 || orb.x > width + 100) orb.vx *= -1;
+                if (orb.y < -100 || orb.y > height + 100) orb.vy *= -1;
+
+                const grad = ctx.createRadialGradient(orb.x, orb.y, 0, orb.x, orb.y, orb.r);
+                grad.addColorStop(0, orb.color);
+                grad.addColorStop(1, 'transparent');
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(orb.x, orb.y, orb.r, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            requestAnimationFrame(renderAurora);
+        }
+        renderAurora();
+
+        // Mouse Spotlight
+        document.addEventListener('mousemove', (e) => {
+            document.querySelectorAll('.spotlight-card').forEach(card => {
+                const rect = card.getBoundingClientRect();
+                card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+                card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+            });
+        });
+
+        // BGM Music Player
         const audio = document.getElementById('bgm-audio');
         const playBtn = document.getElementById('play-btn');
         const trackStatus = document.getElementById('track-status');
         const playerContainer = document.getElementById('music-player');
-
-        // Giảm âm lượng mặc định xuống 30% để không làm giật mình
         audio.volume = 0.3;
 
         playBtn.addEventListener('click', () => {
@@ -285,7 +529,7 @@
             }
         });
 
-        // --- SCRIPT XỬ LÝ SERVER DANH SÁCH ---
+        // Load Guilds from API
         document.addEventListener('DOMContentLoaded', async () => {
             const grid = document.getElementById('guild-grid');
             const loadingEl = document.getElementById('loading');
@@ -296,9 +540,9 @@
 
                 if (!res.ok) {
                     grid.innerHTML = `
-                        <div style="background:var(--bg-card); padding:30px; border-radius:12px; grid-column: 1/-1; text-align:center; border: 1px solid #1f2124;">
-                            <p style="color:#da373c; margin-bottom:15px; font-weight:600; font-size:16px;">Phiên đăng nhập chưa có hoặc đã hết hạn.</p>
-                            <a href="/public/login" class="btn btn-primary" style="max-width:220px; margin:0 auto;">Đăng nhập lại Discord</a>
+                        <div class="spotlight-card" style="padding:40px; grid-column: 1/-1; text-align:center;">
+                            <p style="color:#f23f43; margin-bottom:18px; font-weight:800; font-size:16px;">Phiên đăng nhập chưa có hoặc đã hết hạn.</p>
+                            <a href="/public/login" class="btn btn-primary" style="max-width:240px; margin:0 auto;">Đăng nhập lại Discord</a>
                         </div>`;
                     return;
                 }
@@ -306,24 +550,25 @@
                 const guilds = await res.json();
                 
                 if (!Array.isArray(guilds) || guilds.length === 0) {
-                    grid.innerHTML = `<p style="color:var(--text-muted); grid-column: 1/-1;">Không tìm thấy máy chủ nào mà bạn có quyền Quản trị viên (Administrator).</p>`;
+                    grid.innerHTML = `<p style="color:var(--text-secondary); grid-column: 1/-1; font-size:15px;">Không tìm thấy máy chủ nào mà bạn có quyền Quản lý máy chủ (Manage Guild hoặc Admin).</p>`;
                     return;
                 }
 
-                grid.innerHTML = guilds.map(g => {
+                grid.innerHTML = guilds.map((g, idx) => {
                     const inviteLink = g.inviteUrl || `https://discord.com/api/oauth2/authorize?client_id=${g.botClientId || '1491052906496131296'}&permissions=8&scope=bot%20applications.commands&guild_id=${g.id}&disable_guild_select=true`;
+                    const delay = (idx * 0.07).toFixed(2);
                     return `
-                    <div class="card">
+                    <div class="card spotlight-card" style="animation: cardFadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: ${delay}s;">
                         <img src="${g.icon || 'https://cdn.discordapp.com/embed/avatars/0.png'}" onerror="this.src='https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f431.png'">
-                        <h3 style="color:var(--text-header); margin-bottom:15px; font-size:16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width: 100%;" title="${g.name}">${g.name}</h3>
+                        <h3 style="color:#fff; margin-bottom:18px; font-size:17px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width: 100%;" title="${g.name}">${g.name}</h3>
                         ${g.botInstalled 
-                            ? `<a href="/public/config.html?guildId=${g.id}" class="btn btn-primary">⚙️ Cài đặt Server</a>` 
+                            ? `<a href="/config?guildId=${g.id}" class="btn btn-primary">⚙️ Cài đặt Server</a>` 
                             : `<a href="${inviteLink}" target="_blank" class="btn btn-secondary">➕ Thêm Bot</a>`}
                     </div>
                 `}).join('');
             } catch (err) {
                 if (loadingEl) loadingEl.style.display = 'none';
-                grid.innerHTML = `<p style="color:#da373c; grid-column: 1/-1;">Lỗi kết nối tới máy chủ backend!</p>`;
+                grid.innerHTML = `<p style="color:#f23f43; grid-column: 1/-1; font-weight:700;">Lỗi kết nối tới máy chủ backend!</p>`;
             }
         });
     </script>

@@ -1,0 +1,1702 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meow Bot - Ultra-Premium Interactive Experience</title>
+    <link rel="icon" type="image/png" href="/user_public/meow-logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* 🐾 3 TÔNG MÀU CHỦ ĐẠO THƯƠNG HIỆU MEOW:
+               1. Cam Đào Neon (Peach Orange): #FEA166 / #FF8C38
+               2. Đen Obsidian Sâu Thẳm (Obsidian Black): #06080C / #0B0E15
+               3. Trắng Tuyết Tinh Khiết (Snow White): #FFFFFF
+            */
+            --brand-orange: #FEA166;
+            --brand-orange-bright: #FF8F3D;
+            --brand-orange-glow: rgba(254, 161, 102, 0.45);
+            --brand-orange-bg: rgba(254, 161, 102, 0.09);
+            --brand-orange-border: rgba(254, 161, 102, 0.28);
+
+            --bg-body: #06080c;
+            --bg-navbar: rgba(8, 10, 15, 0.75);
+            --bg-sidebar: rgba(11, 14, 22, 0.85);
+            --bg-card: rgba(18, 22, 34, 0.65);
+            --bg-card-hover: rgba(26, 32, 48, 0.85);
+            --bg-surface: rgba(30, 37, 56, 0.6);
+            --bg-input: rgba(13, 16, 25, 0.85);
+
+            --text-white: #ffffff;
+            --text-primary: #f2f4f8;
+            --text-secondary: #9aa5b8;
+            --text-muted: #5e687b;
+
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --border-glass-hover: rgba(254, 161, 102, 0.45);
+
+            --success: #23a55a;
+            --danger: #f23f43;
+            --warning: #f0b232;
+
+            --radius-sm: 10px;
+            --radius-md: 16px;
+            --radius-lg: 24px;
+            --radius-full: 9999px;
+
+            --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Ambient Animated Aurora Background */
+        #bg-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.85;
+        }
+
+        /* Glassmorphism Surface Base */
+        .glass-panel {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-glass);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Mouse Spotlight Glow effect on cards */
+        .spotlight-card {
+            position: relative;
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-lg);
+            transition: all 0.35s var(--ease-smooth);
+            overflow: hidden;
+        }
+        .spotlight-card::before {
+            content: '';
+            position: absolute;
+            top: var(--mouse-y, -200px);
+            left: var(--mouse-x, -200px);
+            width: 320px;
+            height: 320px;
+            background: radial-gradient(circle, var(--brand-orange-glow) 0%, transparent 70%);
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .spotlight-card:hover::before { opacity: 0.45; }
+        .spotlight-card:hover {
+            border-color: var(--border-glass-hover);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6), 0 0 30px var(--brand-orange-bg);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(254, 161, 102, 0.2); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--brand-orange); }
+
+        /* SPA VIEW SWITCHER ANIMATION */
+        .app-view {
+            display: none;
+            opacity: 0;
+            transform: scale(0.98) translateY(12px);
+            transition: opacity 0.4s var(--ease-smooth), transform 0.4s var(--ease-smooth);
+            position: relative;
+            z-index: 1;
+        }
+        .app-view.active-view {
+            display: block;
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+
+        /* STAGGERED ENTRANCE ANIMATIONS */
+        @keyframes staggerFadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .stagger-1 { animation: staggerFadeUp 0.5s 0.05s var(--ease-smooth) both; }
+        .stagger-2 { animation: staggerFadeUp 0.5s 0.12s var(--ease-smooth) both; }
+        .stagger-3 { animation: staggerFadeUp 0.5s 0.20s var(--ease-smooth) both; }
+        .stagger-4 { animation: staggerFadeUp 0.5s 0.28s var(--ease-smooth) both; }
+
+        /* BUTTONS WITH SHINE SWEEP */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 12px 24px;
+            border-radius: var(--radius-full);
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            text-decoration: none;
+            border: none;
+            transition: all 0.3s var(--ease-spring);
+            user-select: none;
+            position: relative;
+            overflow: hidden;
+            z-index: 2;
+        }
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%; width: 60%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+            transform: skewX(-20deg);
+            transition: none;
+        }
+        .btn:hover::after {
+            left: 140%;
+            transition: 0.6s ease;
+        }
+        .btn:active { transform: scale(0.94) !important; }
+
+        .btn-orange {
+            background: linear-gradient(135deg, #FEA166 0%, #FF8533 100%);
+            color: #06080c;
+            box-shadow: 0 8px 25px var(--brand-orange-glow);
+        }
+        .btn-orange:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 14px 35px rgba(254, 161, 102, 0.6);
+            color: #000;
+        }
+
+        .btn-white {
+            background: #ffffff;
+            color: #06080c;
+            box-shadow: 0 8px 25px rgba(255, 255, 255, 0.2);
+        }
+        .btn-white:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 14px 35px rgba(255, 255, 255, 0.35);
+        }
+
+        .btn-dark {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-white);
+            border: 1px solid var(--border-glass);
+            backdrop-filter: blur(12px);
+        }
+        .btn-dark:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--brand-orange);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+        }
+
+        /* ========================================================
+           VIEW 1: MODERN LANDING PAGE
+        ======================================================== */
+        .landing-nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 48px;
+            background: var(--bg-navbar);
+            backdrop-filter: blur(24px);
+            border-bottom: 1px solid var(--border-glass);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 22px;
+            font-weight: 900;
+            color: #fff;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .brand-logo img {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            box-shadow: none;
+            transition: transform 0.4s var(--ease-spring);
+        }
+        .brand-logo:hover img {
+            transform: scale(1.15) rotate(-6deg);
+        }
+
+        .nav-menu {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+            list-style: none;
+        }
+        .nav-menu a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14.5px;
+            font-weight: 700;
+            transition: color 0.25s ease;
+            cursor: pointer;
+            position: relative;
+        }
+        .nav-menu a::after {
+            content: '';
+            position: absolute;
+            bottom: -4px; left: 0; width: 0; height: 2px;
+            background: var(--brand-orange);
+            border-radius: 2px;
+            transition: width 0.3s var(--ease-smooth);
+        }
+        .nav-menu a:hover { color: #fff; }
+        .nav-menu a:hover::after { width: 100%; }
+
+        /* Hero */
+        .hero-section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 85px 24px 50px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        @keyframes floatBadge {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-8px) rotate(1.5deg); }
+        }
+        .floating-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 22px;
+            border-radius: var(--radius-full);
+            background: var(--brand-orange-bg);
+            border: 1px solid var(--brand-orange-border);
+            color: var(--brand-orange);
+            font-size: 13.5px;
+            font-weight: 800;
+            margin-bottom: 30px;
+            box-shadow: 0 0 25px rgba(254, 161, 102, 0.2);
+            animation: floatBadge 3.5s ease-in-out infinite;
+        }
+
+        .hero-section h1 {
+            font-size: 64px;
+            font-weight: 900;
+            line-height: 1.1;
+            letter-spacing: -2.5px;
+            margin-bottom: 24px;
+            color: #ffffff;
+        }
+        .highlight-orange {
+            background: linear-gradient(135deg, #ffffff 0%, #FEA166 50%, #FF8024 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 40px var(--brand-orange-glow);
+        }
+
+        .hero-section p {
+            font-size: 19px;
+            color: var(--text-secondary);
+            max-width: 740px;
+            line-height: 1.65;
+            margin-bottom: 42px;
+        }
+
+        .hero-cta-group {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 60px;
+        }
+
+        /* Metrics Bar */
+        .metrics-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 50px;
+            padding: 24px 54px;
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--brand-orange-border);
+            border-radius: var(--radius-full);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6), 0 0 40px var(--brand-orange-bg);
+            margin-bottom: 75px;
+            position: relative;
+        }
+        .metric-block {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        .metric-num {
+            font-size: 26px;
+            font-weight: 900;
+            color: #ffffff;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .metric-text {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+        }
+
+        /* 3D Tilt Showcase Frame */
+        .interactive-showcase {
+            width: 100%;
+            max-width: 1100px;
+            padding: 28px;
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            transition: transform 0.4s var(--ease-smooth), box-shadow 0.4s ease;
+            transform-style: preserve-3d;
+            perspective: 1000px;
+        }
+        .showcase-topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 18px;
+            border-bottom: 1px solid var(--border-glass);
+            margin-bottom: 22px;
+        }
+
+        /* Dev Tools Section */
+        .dev-tools-container {
+            max-width: 1200px;
+            margin: 40px auto 100px;
+            padding: 0 24px;
+        }
+        .dev-tools-title {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .dev-tools-title h2 { font-size: 34px; font-weight: 900; color: #fff; margin-bottom: 10px; }
+        .dev-tools-title p { color: var(--text-secondary); font-size: 16px; }
+
+        .tools-card-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+        .dev-card {
+            padding: 24px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .dev-card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: var(--brand-orange-bg);
+            border: 1px solid var(--brand-orange-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 4px;
+            box-shadow: 0 4px 14px var(--brand-orange-bg);
+            transition: transform 0.3s var(--ease-spring);
+        }
+        .dev-card:hover .dev-card-icon {
+            transform: scale(1.15) rotate(6deg);
+        }
+
+        /* ========================================================
+           VIEW 2: SERVERS SELECTION PORTAL
+        ======================================================== */
+        #view-servers {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .portal-navbar {
+            padding: 18px 48px;
+            background: var(--bg-sidebar);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-glass);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .portal-body {
+            max-width: 1100px;
+            width: 100%;
+            margin: 50px auto;
+            padding: 0 24px;
+            flex: 1;
+        }
+
+        .portal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 36px;
+        }
+        .portal-header h2 { font-size: 30px; font-weight: 900; color: #fff; }
+
+        .server-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        .server-card-box {
+            padding: 28px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 20px;
+        }
+
+        .server-avatar-circle {
+            width: 86px;
+            height: 86px;
+            border-radius: 28px;
+            background: linear-gradient(135deg, #FEA166 0%, #FF8533 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 42px;
+            color: #06080c;
+            box-shadow: 0 10px 28px var(--brand-orange-glow);
+            transition: transform 0.35s var(--ease-spring);
+        }
+        .server-card-box:hover .server-avatar-circle {
+            transform: scale(1.1) rotate(4deg);
+        }
+
+        /* ========================================================
+           VIEW 3: COMPLETE SERVER DASHBOARD
+        ======================================================== */
+        #view-dashboard {
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Strip */
+        .dash-servers-strip {
+            width: 78px;
+            background: var(--bg-servers);
+            border-right: 1px solid var(--border-glass);
+            padding: 18px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+            flex-shrink: 0;
+            z-index: 10;
+        }
+
+        .strip-circle {
+            position: relative;
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            cursor: pointer;
+            transition: all 0.3s var(--ease-spring);
+            user-select: none;
+        }
+        .strip-circle:hover, .strip-circle.active {
+            border-radius: 16px;
+            background: var(--brand-orange);
+            color: #06080c;
+            border-color: var(--brand-orange);
+            box-shadow: 0 6px 20px var(--brand-orange-glow);
+            transform: scale(1.05);
+        }
+        .strip-indicator {
+            position: absolute;
+            left: -18px;
+            width: 4px;
+            height: 8px;
+            background: #ffffff;
+            border-radius: 0 4px 4px 0;
+            opacity: 0;
+            transition: all 0.3s var(--ease-smooth);
+        }
+        .strip-circle:hover .strip-indicator { opacity: 1; height: 24px; }
+        .strip-circle.active .strip-indicator { opacity: 1; height: 42px; background: var(--brand-orange); }
+
+        /* Sidebar */
+        .dash-sidebar-panel {
+            width: 260px;
+            background: var(--bg-sidebar);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid var(--border-glass);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            z-index: 5;
+        }
+
+        .dash-sidebar-top {
+            padding: 22px 18px;
+            border-bottom: 1px solid var(--border-glass);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .dash-menu-items {
+            flex: 1;
+            overflow-y: auto;
+            padding: 18px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .menu-category-label {
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            padding: 14px 10px 4px;
+        }
+
+        .menu-tab-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 14px;
+            border-radius: var(--radius-sm);
+            font-size: 13.5px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.25s var(--ease-smooth);
+            text-decoration: none;
+            user-select: none;
+        }
+        .menu-tab-btn:hover {
+            background: rgba(255,255,255,0.04);
+            color: #ffffff;
+            transform: translateX(3px);
+        }
+        .menu-tab-btn.active {
+            background: linear-gradient(90deg, rgba(254, 161, 102, 0.22) 0%, rgba(254, 161, 102, 0.04) 100%);
+            color: #ffffff;
+            border-left: 3px solid var(--brand-orange);
+        }
+
+        /* Screen */
+        .dash-screen {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-main);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .dash-header-bar {
+            height: 70px;
+            padding: 0 32px;
+            border-bottom: 1px solid var(--border-glass);
+            background: rgba(8, 10, 15, 0.85);
+            backdrop-filter: blur(20px);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 10;
+        }
+
+        .dash-scrollable-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+            z-index: 1;
+        }
+
+        /* Tab Content Panel */
+        .tab-panel-view {
+            display: none;
+            flex-direction: column;
+            gap: 26px;
+        }
+        .tab-panel-view.active {
+            display: flex;
+        }
+
+        .stat-box-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .stat-box {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .module-tile-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .module-tile {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* Toggle Switch Orange */
+        .switch-control {
+            position: relative;
+            width: 48px;
+            height: 26px;
+            display: inline-block;
+        }
+        .switch-control input { opacity: 0; width: 0; height: 0; }
+        .switch-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(255,255,255,0.12);
+            transition: all 0.3s var(--ease-spring);
+            border-radius: 26px;
+        }
+        .switch-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background-color: #ffffff;
+            transition: all 0.3s var(--ease-spring);
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+        }
+        input:checked + .switch-slider {
+            background-color: var(--brand-orange);
+            box-shadow: 0 0 16px var(--brand-orange-glow);
+        }
+        input:checked + .switch-slider:before {
+            transform: translateX(22px);
+            background-color: #06080c;
+        }
+
+        /* Forms */
+        .form-grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 22px;
+        }
+        .field-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .field-group label {
+            font-size: 13.5px;
+            font-weight: 700;
+            color: var(--text-secondary);
+        }
+        .input-text {
+            background: var(--bg-input);
+            border: 1px solid var(--border-glass);
+            padding: 12px 16px;
+            border-radius: var(--radius-sm);
+            color: var(--text-white);
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.25s ease, box-shadow 0.25s ease;
+        }
+        .input-text:focus {
+            border-color: var(--brand-orange);
+            box-shadow: 0 0 0 3px var(--brand-orange-bg);
+        }
+
+        /* Embed Discord Preview */
+        .discord-preview-box {
+            background: #2b2d31;
+            border-left: 4px solid var(--brand-orange);
+            border-radius: 6px;
+            padding: 18px 22px;
+            max-width: 520px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+        }
+
+        /* 3D Rolling Dice Animation */
+        .dice-display-area {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+            padding: 32px;
+            background: var(--bg-surface);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--brand-orange-border);
+        }
+        .dice-item {
+            width: 64px;
+            height: 64px;
+            background: #ffffff;
+            color: #06080c;
+            font-size: 36px;
+            font-weight: 900;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+            transition: transform 0.5s var(--ease-spring);
+        }
+
+        /* Modal Overlay */
+        .modal-wrap {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(14px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 999999;
+        }
+        .modal-box {
+            background: var(--bg-card);
+            backdrop-filter: blur(25px);
+            border: 1px solid var(--brand-orange-border);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            max-width: 520px;
+            width: 90%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.95), 0 0 50px var(--brand-orange-bg);
+            animation: modalSpring 0.4s var(--ease-spring);
+        }
+        @keyframes modalSpring {
+            from { transform: scale(0.85); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        /* Toast with Countdown Progress Bar */
+        .toast-shelf {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 9999999;
+        }
+        .toast-item {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--brand-orange-border);
+            box-shadow: 0 16px 40px rgba(0,0,0,0.8), 0 0 25px var(--brand-orange-bg);
+            padding: 16px 22px;
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            font-weight: 700;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            color: #ffffff;
+            animation: slideToast 0.35s var(--ease-spring);
+            position: relative;
+            overflow: hidden;
+        }
+        @keyframes slideToast {
+            from { transform: translateY(35px) scale(0.9); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+        .toast-progress {
+            position: absolute;
+            bottom: 0; left: 0; height: 3px;
+            background: linear-gradient(90deg, var(--brand-orange), #ff8533);
+            width: 100%;
+            animation: toastCountdown 3s linear forwards;
+        }
+        @keyframes toastCountdown {
+            from { width: 100%; }
+            to { width: 0%; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Canvas Background for Dynamic Particle / Aurora Mesh -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- ========================================================
+         VIEW 1: MODERN LANDING PAGE
+    ======================================================== -->
+    <div id="view-landing" class="app-view active-view">
+        <header class="landing-nav">
+            <div class="brand-logo" onclick="switchView('landing')">
+                <img src="/user_public/meow-logo.png" onerror="this.src='https://cdn.discordapp.com/embed/avatars/1.png';">
+                <span class="meow-text">Meow<span style="color:var(--brand-orange)">.</span></span>
+            </div>
+
+            <ul class="nav-menu">
+                <li><a onclick="switchView('servers')">Tính Năng</a></li>
+                <li><a href="#dev-tools-section">Tiện Ích Dev</a></li>
+                <li><a href="/docs">Tài Liệu</a></li>
+                <li><a onclick="showToast('💬 Hỗ trợ trực tuyến: dsc.gg/meowbotsupport')">Hỗ Trợ</a></li>
+            </ul>
+
+            <div style="display:flex; align-items:center; gap:14px;">
+                <button class="btn btn-dark" onclick="switchView('servers')">
+                    Đăng Nhập
+                </button>
+                <button class="btn btn-orange" onclick="switchView('servers')">
+                    ⚙️ Mở Dashboard
+                </button>
+            </div>
+        </header>
+
+        <section class="hero-section">
+            <div class="floating-badge stagger-1">
+                <span>🐾</span> <span>Meow Bot v2.0 - The Ultimate Discord App</span>
+            </div>
+
+            <h1 class="stagger-2">
+                Nâng Tầm Discord Của Bạn<br>
+                Với <span class="highlight-orange">Meow Bot</span>.
+            </h1>
+
+            <p class="stagger-3">
+                Trải nghiệm hệ thống Bot đa năng toàn diện với Web Dashboard trực quan, bảo mật Automod, hỗ trợ Ticket CSKH, âm nhạc 24/7 và hệ sinh thái giải trí đỉnh cao.
+            </p>
+
+            <div class="hero-cta-group stagger-4">
+                <button class="btn btn-orange" style="padding:16px 36px; font-size:16px;" onclick="switchView('servers')">
+                    🚀 Trải Nghiệm Dashboard Ngay
+                </button>
+                <a href="https://discord.com/api/oauth2/authorize?client_id=1491052906496131296&permissions=8&scope=bot" target="_blank" class="btn btn-white" style="padding:16px 36px; font-size:16px;">
+                    ➕ Thêm Vào Discord
+                </a>
+            </div>
+
+            <!-- Metrics Bar -->
+            <div class="metrics-bar stagger-4">
+                <div class="metric-block">
+                    <span class="metric-num" data-target="1450">1,450+</span>
+                    <span class="metric-text">Máy Chủ Đang Dùng</span>
+                </div>
+                <div style="width:1px; height:36px; background:var(--border-glass);"></div>
+                <div class="metric-block">
+                    <span class="metric-num" data-target="380000">380,000+</span>
+                    <span class="metric-text">Thành Viên Hoạt Động</span>
+                </div>
+                <div style="width:1px; height:36px; background:var(--border-glass);"></div>
+                <div class="metric-block">
+                    <span class="metric-num" style="color:var(--brand-orange);">99.98%</span>
+                    <span class="metric-text">Uptime Trực Tuyến</span>
+                </div>
+                <div style="width:1px; height:36px; background:var(--border-glass);"></div>
+                <div class="metric-block">
+                    <span class="metric-num" style="color:var(--success);">18ms</span>
+                    <span class="metric-text">Độ Trễ Phản Hồi</span>
+                </div>
+            </div>
+
+            <!-- Interactive 3D Showcase Frame -->
+            <div class="interactive-showcase spotlight-card stagger-4" id="hero-showcase-box" onclick="switchView('servers')">
+                <div class="showcase-topbar">
+                    <div style="display:flex; gap:8px;">
+                        <span style="width:12px; height:12px; border-radius:50%; background:#ff5f56;"></span>
+                        <span style="width:12px; height:12px; border-radius:50%; background:#ffbd2e;"></span>
+                        <span style="width:12px; height:12px; border-radius:50%; background:#27c93f;"></span>
+                    </div>
+                    <span style="font-size:13px; font-weight:800; color:var(--text-white);">🐾 Meow Dashboard v2.0 - Live Control Panel (Bấm để mở)</span>
+                    <span style="font-size:13px; font-weight:800; color:var(--brand-orange);">Vào Dashboard →</span>
+                </div>
+
+                <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:18px; text-align:left;">
+                    <div style="background:rgba(8,11,18,0.7); padding:22px; border-radius:14px; border:1px solid var(--border-glass);">
+                        <div style="font-size:26px; margin-bottom:8px;">🛡️</div>
+                        <h4 style="font-size:16px; font-weight:800; margin-bottom:6px; color:#fff;">Automod & Anti-Scam</h4>
+                        <p style="font-size:13px; color:var(--text-secondary);">Tự động loại bỏ link lừa đảo và tin nhắn spam.</p>
+                    </div>
+                    <div style="background:rgba(8,11,18,0.7); padding:22px; border-radius:14px; border:1px solid var(--border-glass);">
+                        <div style="font-size:26px; margin-bottom:8px;">🎫</div>
+                        <h4 style="font-size:16px; font-weight:800; margin-bottom:6px; color:#fff;">Ticket CSKH</h4>
+                        <p style="font-size:13px; color:var(--text-secondary);">Hệ thống tạo kênh hỗ trợ & xuất transcript chuẩn.</p>
+                    </div>
+                    <div style="background:rgba(8,11,18,0.7); padding:22px; border-radius:14px; border:1px solid var(--border-glass);">
+                        <div style="font-size:26px; margin-bottom:8px;">💰</div>
+                        <h4 style="font-size:16px; font-weight:800; margin-bottom:6px; color:#fff;">Kinh Tế NCoin</h4>
+                        <p style="font-size:13px; color:var(--text-secondary);">Tài xỉu minigame, nạp coin và shop tùy chỉnh.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dev Tools Section -->
+        <section class="dev-tools-container" id="dev-tools-section">
+            <div class="dev-tools-title">
+                <h2>Bộ Tiện Ích & Công Cụ Phát Triển</h2>
+                <p>Công cụ hỗ trợ Discord, Roblox và bảo vệ mã nguồn dành cho lập trình viên</p>
+            </div>
+
+            <div class="tools-card-grid">
+                <div class="dev-card spotlight-card" onclick="openDevModal('🤖 AI Script Generator', 'Tự động tạo lệnh bot Discord và kịch bản thông minh bằng AI...')">
+                    <div class="dev-card-icon">🤖</div>
+                    <h4>AI Gen Script</h4>
+                    <p>Tạo mã lệnh bot Discord tự động</p>
+                </div>
+                <div class="dev-card spotlight-card" onclick="openDevModal('🧬 Genalt Studio', 'Studio phân tích tài nguyên và cấu trúc dữ liệu...')">
+                    <div class="dev-card-icon">🧬</div>
+                    <h4>Genalt Studio</h4>
+                    <p>Phân tích & khởi tạo tài nguyên</p>
+                </div>
+                <div class="dev-card spotlight-card" onclick="openDevModal('🌐 HTTP Fetch Client', 'Kiểm tra REST API endpoints trực tiếp với phương thức GET/POST...')">
+                    <div class="dev-card-icon">🌐</div>
+                    <h4>Fetch Client</h4>
+                    <p>Kiểm tra API mạng tốc độ cao</p>
+                </div>
+                <div class="dev-card spotlight-card" onclick="openDevModal('🔒 Code Obfuscator', 'Bảo vệ mã nguồn Javascript chống đánh cắp code...')">
+                    <div class="dev-card-icon">🔒</div>
+                    <h4>Code Obfuscator</h4>
+                    <p>Mã hóa bảo vệ source code</p>
+                </div>
+                <div class="dev-card spotlight-card" onclick="openDevModal('🔓 Deobfuscator', 'Giải mã code ẩn và định dạng lại cấu trúc code...')">
+                    <div class="dev-card-icon">🔓</div>
+                    <h4>Deobfuscator</h4>
+                    <p>Giải mã source code phức tạp</p>
+                </div>
+                <div class="dev-card spotlight-card" onclick="openDevModal('🎯 User Sniper', 'Tra cứu thông tin User Discord nhanh chóng...')">
+                    <div class="dev-card-icon">🎯</div>
+                    <h4>User Sniper</h4>
+                    <p>Truy xuất thông tin người dùng</p>
+                </div>
+                <div class="dev-card spotlight-card" onclick="openDevModal('🔗 Bypass Link', 'Vượt link rút gọn Linkvertise, Sub2Unlock...')">
+                    <div class="dev-card-icon">🔗</div>
+                    <h4>Bypass Link</h4>
+                    <p>Bypass link rút gọn siêu tốc</p>
+                </div>
+                <div class="dev-card spotlight-card" onclick="openDevModal('🎮 Roblox Avatar Lookup', 'Nhập username Roblox để tải Avatar 3D & tra cứu Profile...')">
+                    <div class="dev-card-icon">🎮</div>
+                    <h4>Roblox Lookup</h4>
+                    <p>Tra cứu Profile & Avatar Roblox</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- ========================================================
+         VIEW 2: SERVERS SELECTION PORTAL
+    ======================================================== -->
+    <div id="view-servers" class="app-view">
+        <header class="portal-navbar">
+            <div class="brand-logo" onclick="switchView('landing')">
+                <img src="/user_public/meow-logo.png" onerror="this.src='https://cdn.discordapp.com/embed/avatars/1.png';">
+                <span class="meow-text">Meow Dashboard<span style="color:var(--brand-orange)">.</span></span>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:16px;">
+                <button class="btn btn-dark" onclick="switchView('landing')">
+                    🏠 Về Trang Chủ
+                </button>
+                <div style="display:flex; align-items:center; gap:10px; padding:6px 14px; background:var(--bg-card); border-radius:var(--radius-full); border:1px solid var(--brand-orange-border);">
+                    <img src="https://cdn.discordapp.com/embed/avatars/0.png" style="width:28px; height:28px; border-radius:50%;">
+                    <span style="font-size:13.5px; font-weight:800; color:#fff;">Neko#0001</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="portal-body">
+            <div class="portal-header">
+                <div>
+                    <h2>Chọn Máy Chủ Cần Quản Lý</h2>
+                    <p style="color:var(--text-secondary); font-size:14.5px; margin-top:4px;">Chỉ hiển thị các server bạn có quyền Quản trị (Admin / Manage Server)</p>
+                </div>
+                <button class="btn btn-orange" onclick="showToast('Mở cửa sổ thêm Meow Bot vào máy chủ...')">
+                    ➕ Thêm Bot Vào Server Mới
+                </button>
+            </div>
+
+            <div class="server-grid">
+                <!-- Guild 1 -->
+                <div class="server-card-box spotlight-card">
+                    <div class="server-avatar-circle">🐾</div>
+                    <div>
+                        <h3 style="font-size:19px; font-weight:800; color:#fff;">Meow Community</h3>
+                        <p style="font-size:13px; color:var(--text-secondary); margin-top:4px;">14,250 Thành viên • Bot Đã Cài Đặt</p>
+                    </div>
+                    <button class="btn btn-orange" style="width:100%;" onclick="openServer('Meow Community', '🐾', '14,250')">
+                        ⚙️ Quản Lý Server
+                    </button>
+                </div>
+
+                <!-- Guild 2 -->
+                <div class="server-card-box spotlight-card">
+                    <div class="server-avatar-circle" style="background:#ffffff; color:#06080c;">💻</div>
+                    <div>
+                        <h3 style="font-size:19px; font-weight:800; color:#fff;">Coding & Dev Den</h3>
+                        <p style="font-size:13px; color:var(--text-secondary); margin-top:4px;">3,420 Thành viên • Bot Đã Cài Đặt</p>
+                    </div>
+                    <button class="btn btn-orange" style="width:100%;" onclick="openServer('Coding & Dev Den', '💻', '3,420')">
+                        ⚙️ Quản Lý Server
+                    </button>
+                </div>
+
+                <!-- Guild 3 -->
+                <div class="server-card-box spotlight-card">
+                    <div class="server-avatar-circle" style="background:#202534; color:#ffffff;">🎮</div>
+                    <div>
+                        <h3 style="font-size:19px; font-weight:800; color:#fff;">Gaming Hub VIP</h3>
+                        <p style="font-size:13px; color:var(--text-secondary); margin-top:4px;">8,900 Thành viên • Bot Đã Cài Đặt</p>
+                    </div>
+                    <button class="btn btn-orange" style="width:100%;" onclick="openServer('Gaming Hub VIP', '🎮', '8,900')">
+                        ⚙️ Quản Lý Server
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ========================================================
+         VIEW 3: COMPLETE SERVER DASHBOARD
+    ======================================================== -->
+    <div id="view-dashboard" class="app-view">
+        <!-- 1. Cột Server Tròn bên trái -->
+        <aside class="dash-servers-strip">
+            <div class="strip-circle active" onclick="switchGuildInDash('Meow Community', '🐾', '14,250', this)" title="Meow Community">
+                <span class="strip-indicator"></span>
+                🐾
+            </div>
+            <div class="strip-circle" onclick="switchGuildInDash('Coding & Dev Den', '💻', '3,420', this)" title="Coding & Dev Den">
+                <span class="strip-indicator"></span>
+                💻
+            </div>
+            <div class="strip-circle" onclick="switchGuildInDash('Gaming Hub VIP', '🎮', '8,900', this)" title="Gaming Hub VIP">
+                <span class="strip-indicator"></span>
+                🎮
+            </div>
+            <div style="width:36px; height:1px; background:var(--border-glass); margin:4px 0;"></div>
+            <div class="strip-circle" onclick="switchView('servers')" title="Quay lại danh sách Server">
+                🔙
+            </div>
+        </aside>
+
+        <!-- 2. Sidebar Danh mục Chức Năng -->
+        <nav class="dash-sidebar-panel">
+            <div class="dash-sidebar-top">
+                <div id="dash-guild-avatar-box" style="width:38px; height:38px; border-radius:12px; background:var(--brand-orange); color:#06080c; display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:900;">🐾</div>
+                <div style="overflow:hidden;">
+                    <div id="dash-guild-title-text" style="font-size:14.5px; font-weight:800; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width:135px;">Meow Community</div>
+                    <div style="font-size:11px; color:var(--brand-orange); font-weight:700;">● Online • 18ms</div>
+                </div>
+            </div>
+
+            <div class="dash-menu-items">
+                <div class="menu-category-label">Tổng Quan</div>
+                <a class="menu-tab-btn active" onclick="selectTab('dash-tab-overview', this)">
+                    <span>📊</span> <span>Overview</span>
+                </a>
+
+                <div class="menu-category-label">Quản Trị & Hỗ Trợ</div>
+                <a class="menu-tab-btn" onclick="selectTab('dash-tab-tickets', this)">
+                    <span>🎫</span> <span>Ticket System</span>
+                </a>
+                <a class="menu-tab-btn" onclick="selectTab('dash-tab-triggers', this)">
+                    <span>🤖</span> <span>Auto-Responder</span>
+                </a>
+                <a class="menu-tab-btn" onclick="selectTab('dash-tab-welcome', this)">
+                    <span>👋</span> <span>Welcome & Auto Role</span>
+                </a>
+                <a class="menu-tab-btn" onclick="selectTab('dash-tab-roles', this)">
+                    <span>🎭</span> <span>Reaction Roles</span>
+                </a>
+
+                <div class="menu-category-label">Kinh Tế & An Ninh</div>
+                <a class="menu-tab-btn" onclick="selectTab('dash-tab-economy', this)">
+                    <span>💰</span> <span>Kinh Tế (NCoin & Tài Xỉu)</span>
+                </a>
+                <a class="menu-tab-btn" onclick="selectTab('dash-tab-automod', this)">
+                    <span>🛡️</span> <span>Automod & Warn</span>
+                </a>
+                <a class="menu-tab-btn" onclick="selectTab('dash-tab-premium', this)">
+                    <span>💎</span> <span>Premium & Prefix</span>
+                </a>
+            </div>
+
+            <div style="padding:16px; border-top:1px solid var(--border-glass);">
+                <button class="btn btn-dark" style="width:100%; font-size:13px;" onclick="switchView('servers')">
+                    🔙 Thoát Server
+                </button>
+            </div>
+        </nav>
+
+        <!-- 3. Khu vực Quản Trị Chi Tiết -->
+        <main class="dash-screen">
+            <header class="dash-header-bar">
+                <div style="font-size:14px; font-weight:700; color:var(--text-secondary);">
+                    Dashboard / <span style="color:#fff;" id="dash-current-tab-name">Overview</span>
+                </div>
+
+                <div style="display:flex; align-items:center; gap:16px;">
+                    <button class="btn btn-orange" style="padding:8px 18px; font-size:13px;" onclick="showToast('💾 Cấu hình được đồng bộ tự động thành công!')">
+                        ⚡ Lưu Thay Đổi
+                    </button>
+                    <div style="display:flex; align-items:center; gap:8px; padding:6px 12px; background:var(--bg-card); border-radius:var(--radius-full); border:1px solid var(--brand-orange-border);">
+                        <img src="https://cdn.discordapp.com/embed/avatars/0.png" style="width:24px; height:24px; border-radius:50%;">
+                        <span style="font-size:12.5px; font-weight:800; color:#fff;">Neko</span>
+                    </div>
+                </div>
+            </header>
+
+            <div class="dash-scrollable-area">
+
+                <!-- TAB 1: OVERVIEW -->
+                <div class="tab-panel-view active" id="dash-tab-overview">
+                    <div class="stat-box-row">
+                        <div class="stat-box spotlight-card">
+                            <div style="font-size:12px; color:var(--text-muted); font-weight:800; text-transform:uppercase;">TỔNG THÀNH VIÊN</div>
+                            <div style="font-size:28px; font-weight:900; color:#fff; font-family:'JetBrains Mono',monospace;" id="overview-member-count">14,250</div>
+                            <div style="font-size:12px; color:var(--brand-orange); font-weight:700;">▲ +128 thành viên mới</div>
+                        </div>
+                        <div class="stat-box spotlight-card">
+                            <div style="font-size:12px; color:var(--text-muted); font-weight:800; text-transform:uppercase;">ĐANG ONLINE</div>
+                            <div style="font-size:28px; font-weight:900; color:#fff; font-family:'JetBrains Mono',monospace;">3,891</div>
+                            <div style="font-size:12px; color:var(--success); font-weight:700;">27.3% Tương tác</div>
+                        </div>
+                        <div class="stat-box spotlight-card">
+                            <div style="font-size:12px; color:var(--text-muted); font-weight:800; text-transform:uppercase;">TICKETS ĐANG MỞ</div>
+                            <div style="font-size:28px; font-weight:900; color:#fff; font-family:'JetBrains Mono',monospace;">3</div>
+                            <div style="font-size:12px; color:var(--text-secondary); font-weight:700;">Đã có Staff tiếp nhận</div>
+                        </div>
+                        <div class="stat-box spotlight-card">
+                            <div style="font-size:12px; color:var(--text-muted); font-weight:800; text-transform:uppercase;">SERVER BOOST</div>
+                            <div style="font-size:28px; font-weight:900; color:var(--brand-orange); font-family:'JetBrains Mono',monospace;">Level 3</div>
+                            <div style="font-size:12px; color:var(--brand-orange); font-weight:700;">28 Boosts kích hoạt</div>
+                        </div>
+                    </div>
+
+                    <div class="spotlight-card" style="padding:28px;">
+                        <h3 style="font-size:18px; font-weight:900; margin-bottom:20px; color:#fff;">🐾 Modules Trọng Tâm (Bật / Tắt Tức Thì)</h3>
+                        <div class="module-tile-grid">
+                            <div class="module-tile spotlight-card" style="background:rgba(8,11,18,0.6);">
+                                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                                    <div style="font-size:26px;">🛡️</div>
+                                    <label class="switch-control">
+                                        <input type="checkbox" checked onchange="showToast('Đã cập nhật trạng thái Automod!')">
+                                        <span class="switch-slider"></span>
+                                    </label>
+                                </div>
+                                <div>
+                                    <h4 style="font-size:16px; font-weight:800; color:#fff;">Automod Phishing</h4>
+                                    <p style="font-size:13px; color:var(--text-secondary); margin-top:4px;">Chặn tin nhắn lừa đảo và spam tự động.</p>
+                                </div>
+                            </div>
+
+                            <div class="module-tile spotlight-card" style="background:rgba(8,11,18,0.6);">
+                                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                                    <div style="font-size:26px;">🎫</div>
+                                    <label class="switch-control">
+                                        <input type="checkbox" checked onchange="showToast('Đã cập nhật trạng thái Ticket!')">
+                                        <span class="switch-slider"></span>
+                                    </label>
+                                </div>
+                                <div>
+                                    <h4 style="font-size:16px; font-weight:800; color:#fff;">Hệ Thống Ticket</h4>
+                                    <p style="font-size:13px; color:var(--text-secondary); margin-top:4px;">Panel CSKH hỗ trợ thành viên nhanh chóng.</p>
+                                </div>
+                            </div>
+
+                            <div class="module-tile spotlight-card" style="background:rgba(8,11,18,0.6);">
+                                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                                    <div style="font-size:26px;">👋</div>
+                                    <label class="switch-control">
+                                        <input type="checkbox" checked onchange="showToast('Đã cập nhật trạng thái Welcome!')">
+                                        <span class="switch-slider"></span>
+                                    </label>
+                                </div>
+                                <div>
+                                    <h4 style="font-size:16px; font-weight:800; color:#fff;">Welcome & Auto Role</h4>
+                                    <p style="font-size:13px; color:var(--text-secondary); margin-top:4px;">Chào đón và gán vai trò an toàn.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: TICKET SYSTEM -->
+                <div class="tab-panel-view" id="dash-tab-tickets">
+                    <div class="spotlight-card" style="padding:30px;">
+                        <h3 style="font-size:20px; font-weight:900; margin-bottom:22px; color:#fff;">🎫 Cấu Hình Panel Hỗ Trợ Ticket</h3>
+                        
+                        <div class="form-grid-2">
+                            <div class="field-group">
+                                <label>Kênh Gửi Bảng Ticket</label>
+                                <select class="input-text">
+                                    <option value="">-- Vui lòng chọn kênh --</option>
+                                    <option># 🎫-trợ-giúp-cskh</option>
+                                    <option># 💬-hỗ-trợ-chung</option>
+                                </select>
+                            </div>
+                            <div class="field-group">
+                                <label>Vai Trò Hỗ Trợ (Staff Role)</label>
+                                <select class="input-text">
+                                    <option value="">-- Vui lòng chọn role --</option>
+                                    <option>@ Staff Support</option>
+                                    <option>@ Moderator</option>
+                                    <option>@ Administrator</option>
+                                </select>
+                            </div>
+                            <div class="field-group">
+                                <label>Tiêu Đề Embed</label>
+                                <input type="text" class="input-text" id="ticket-title-input" value="Trung Tâm Hỗ Trợ Khách Hàng Meow" onkeyup="renderTicketPreview()">
+                            </div>
+                            <div class="field-group">
+                                <label>Mô Tả Hướng Dẫn</label>
+                                <input type="text" class="input-text" id="ticket-desc-input" value="Bấm vào nút bên dưới để tạo kênh hỗ trợ riêng với đội ngũ Quản trị viên." onkeyup="renderTicketPreview()">
+                            </div>
+                        </div>
+
+                        <div style="margin-top:26px;">
+                            <label style="font-size:13.5px; font-weight:800; color:var(--text-secondary); margin-bottom:8px; display:block;">Xem Trước Tin Nhắn Embed Trên Discord (Live Preview):</label>
+                            <div class="discord-preview-box">
+                                <div style="font-size:16px; font-weight:800; color:#fff;" id="embed-preview-title">Trung Tâm Hỗ Trợ Khách Hàng Meow</div>
+                                <div style="font-size:13.5px; color:#dbdee1; line-height:1.45;" id="embed-preview-desc">Bấm vào nút bên dưới để tạo kênh hỗ trợ riêng với đội ngũ Quản trị viên.</div>
+                                <button class="btn btn-orange" style="width:fit-content; margin-top:10px; border-radius:6px; padding:7px 16px; font-size:13px;">
+                                    📩 Tạo Ticket Hỗ Trợ
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 3: AUTO-RESPONDER -->
+                <div class="tab-panel-view" id="dash-tab-triggers">
+                    <div class="spotlight-card" style="padding:30px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:22px;">
+                            <div>
+                                <h3 style="font-size:20px; font-weight:900; color:#fff;">🤖 Auto-Responder (Trigger Trả Lời Tự Động)</h3>
+                                <p style="font-size:13px; color:var(--text-secondary); margin-top:4px;">Tự động trả lời khi thành viên nhắn từ khóa chỉ định</p>
+                            </div>
+                            <button class="btn btn-orange" onclick="openTriggerDialog()">+ Thêm Trigger Mới</button>
+                        </div>
+
+                        <table style="width:100%; border-collapse:collapse; font-size:14px;" id="triggers-list-table">
+                            <thead>
+                                <tr style="border-bottom:1px solid var(--border-glass); text-align:left; color:var(--text-muted); font-size:12px; text-transform:uppercase;">
+                                    <th style="padding:12px 16px;">Từ Khóa</th>
+                                    <th style="padding:12px 16px;">Kiểu Khớp</th>
+                                    <th style="padding:12px 16px;">Nội Dung Phản Hồi</th>
+                                    <th style="padding:12px 16px;">Hành Động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr style="border-bottom:1px solid var(--border-glass);">
+                                    <td style="padding:14px 16px;"><code>!ip</code></td>
+                                    <td style="padding:14px 16px;"><span style="background:var(--brand-orange-bg); color:var(--brand-orange); padding:3px 8px; border-radius:4px; font-weight:700; font-size:11px;">Exact</span></td>
+                                    <td style="padding:14px 16px;">Server IP: <code>play.meowcraft.xyz:25565</code></td>
+                                    <td style="padding:14px 16px;"><button class="btn btn-dark" style="padding:4px 12px; font-size:12px;" onclick="this.closest('tr').remove(); showToast('Đã xóa trigger')">Xóa</button></td>
+                                </tr>
+                                <tr style="border-bottom:1px solid var(--border-glass);">
+                                    <td style="padding:14px 16px;"><code>luat</code></td>
+                                    <td style="padding:14px 16px;"><span style="background:var(--brand-orange-bg); color:var(--brand-orange); padding:3px 8px; border-radius:4px; font-weight:700; font-size:11px;">Includes</span></td>
+                                    <td style="padding:14px 16px;">Hãy đọc kỹ quy định tại kênh #quy-tắc nha {user}!</td>
+                                    <td style="padding:14px 16px;"><button class="btn btn-dark" style="padding:4px 12px; font-size:12px;" onclick="this.closest('tr').remove(); showToast('Đã xóa trigger')">Xóa</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- TAB 4: WELCOME -->
+                <div class="tab-panel-view" id="dash-tab-welcome">
+                    <div class="spotlight-card" style="padding:30px;">
+                        <h3 style="font-size:20px; font-weight:900; margin-bottom:22px; color:#fff;">👋 Cấu Hình Chào Mừng & Auto-Role</h3>
+                        <div class="form-grid-2">
+                            <div class="field-group">
+                                <label>Kênh Gửi Tin Nhắn Chào Mừng</label>
+                                <select class="input-text"><option># 👋-chào-mừng</option><option># 💬-chat-chung</option></select>
+                            </div>
+                            <div class="field-group">
+                                <label>Vai Trò Tự Động Cấp (Auto Role)</label>
+                                <select class="input-text"><option>@ Member</option><option>@ Verified</option></select>
+                            </div>
+                            <div class="field-group" style="grid-column: span 2;">
+                                <label>Nội Dung Lời Chào (Hỗ trợ: {user}, {guild}, {count})</label>
+                                <textarea class="input-text" rows="3">Chào mừng {user} đã đến với {guild}! Bạn là thành viên thứ {count} của cộng đồng chúng mình 🎉</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 5: REACTION ROLES -->
+                <div class="tab-panel-view" id="dash-tab-roles">
+                    <div class="spotlight-card" style="padding:30px;">
+                        <h3 style="font-size:20px; font-weight:900; margin-bottom:22px; color:#fff;">🎭 Cấu Hình Reaction Roles</h3>
+                        <div class="form-grid-2">
+                            <div class="field-group">
+                                <label>Kênh Nhận Role</label>
+                                <select class="input-text"><option># 🎭-nhận-vai-trò</option></select>
+                            </div>
+                            <div class="field-group">
+                                <label>Vai Trò Nhận Được</label>
+                                <select class="input-text"><option>@ Gamer</option><option>@ Developer</option></select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 6: ECONOMY & CASINO -->
+                <div class="tab-panel-view" id="dash-tab-economy">
+                    <div class="spotlight-card" style="padding:30px;">
+                        <h3 style="font-size:20px; font-weight:900; margin-bottom:6px; color:#fff;">💰 Hệ Sinh Thái Kinh Tế NCoin & Casino</h3>
+                        <p style="font-size:13.5px; color:var(--text-secondary); margin-bottom:22px;">Trải nghiệm thuật toán lắc 3 xúc xắc Tài Xỉu ngẫu nhiên với hiệu ứng hoạt họa xoay 3D</p>
+
+                        <div style="display:flex; gap:16px; align-items:center; margin-bottom:22px;">
+                            <button class="btn btn-orange" onclick="rollDiceAnimated()">🎲 Lắc Xúc Xắc Tài Xỉu</button>
+                            <span id="taixiu-status-text" style="font-size:15px; font-weight:800; color:var(--brand-orange);">Bấm nút để lắc 3 xúc xắc...</span>
+                        </div>
+
+                        <div class="dice-display-area">
+                            <div class="dice-item" id="die-val-1">⚀</div>
+                            <div class="dice-item" id="die-val-2">⚁</div>
+                            <div class="dice-item" id="die-val-3">⚂</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 7: AUTOMOD -->
+                <div class="tab-panel-view" id="dash-tab-automod">
+                    <div class="spotlight-card" style="padding:30px;">
+                        <h3 style="font-size:20px; font-weight:900; margin-bottom:22px; color:#fff;">🛡️ Cấu Hình Auto Moderation & Ngưỡng Xử Phạt</h3>
+                        <div class="form-grid-2">
+                            <div class="field-group">
+                                <label>Chặn Link Lừa Đảo (Phishing URLs)</label>
+                                <select class="input-text"><option>Bật (Khuyên Dùng)</option><option>Tắt</option></select>
+                            </div>
+                            <div class="field-group">
+                                <label>Ngưỡng Cảnh Báo Tự Động Xử Lý</label>
+                                <select class="input-text"><option>3 Cảnh Báo (Mute 1 Giờ)</option><option>5 Cảnh Báo (Ban)</option></select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 8: PREMIUM -->
+                <div class="tab-panel-view" id="dash-tab-premium">
+                    <div class="spotlight-card" style="padding:30px;">
+                        <h3 style="font-size:20px; font-weight:900; margin-bottom:22px; color:#fff;">💎 Cài Đặt Premium & Prefix Bot</h3>
+                        <div class="form-grid-2">
+                            <div class="field-group">
+                                <label>Tiền Tố Lệnh (Prefix)</label>
+                                <input type="text" class="input-text" value="!">
+                            </div>
+                            <div class="field-group">
+                                <label>Âm Nhạc 24/7 (Không Tự Rời Voice)</label>
+                                <select class="input-text"><option>Bật 24/7</option><option>Tắt (Rời sau 5p)</option></select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL TIỆN ÍCH DEV -->
+    <div class="modal-wrap" id="generic-modal">
+        <div class="modal-box">
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+                <h3 id="modal-heading-text" style="font-size:18px; font-weight:900; color:#fff;">Tiện Ích</h3>
+                <span style="font-size:24px; cursor:pointer; color:var(--text-muted);" onclick="closeAllModals()">&times;</span>
+            </div>
+            <p id="modal-desc-text" style="font-size:13.5px; color:var(--text-secondary);"></p>
+            <input type="text" class="input-text" placeholder="Nhập dữ liệu kiểm tra..." value="https://example.com/api">
+            <button class="btn btn-orange" onclick="showToast('Thao tác thành công trên công cụ!')">Thực Thi Ngay</button>
+        </div>
+    </div>
+
+    <!-- MODAL THÊM TRIGGER -->
+    <div class="modal-wrap" id="trigger-create-modal">
+        <div class="modal-box">
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+                <h3 style="font-size:18px; font-weight:900; color:#fff;">🤖 Thêm Trigger Mới</h3>
+                <span style="font-size:24px; cursor:pointer; color:var(--text-muted);" onclick="closeAllModals()">&times;</span>
+            </div>
+            <div class="field-group">
+                <label>Từ Khóa Trigger</label>
+                <input type="text" class="input-text" id="inp-trig-key" placeholder="Ví dụ: !donate">
+            </div>
+            <div class="field-group">
+                <label>Nội Dung Phản Hồi</label>
+                <input type="text" class="input-text" id="inp-trig-val" placeholder="Ví dụ: Cảm ơn bạn đã ủng hộ tại https://meowbot.xyz/donate">
+            </div>
+            <button class="btn btn-orange" onclick="saveNewTrigger()">Lưu Trigger</button>
+        </div>
+    </div>
+
+    <!-- Toast Shelf -->
+    <div class="toast-shelf" id="toast-shelf"></div>
+
+    <script>
+        // ========================================================
+        // 1. CANVAS BACKGROUND ORBS ANIMATION (60 FPS FLUID)
+        // ========================================================
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        });
+
+        const orbs = [
+            { x: width * 0.2, y: height * 0.2, r: 350, color: 'rgba(254, 161, 102, 0.08)', vx: 0.3, vy: 0.2 },
+            { x: width * 0.8, y: height * 0.7, r: 420, color: 'rgba(254, 161, 102, 0.06)', vx: -0.25, vy: -0.15 },
+            { x: width * 0.5, y: height * 0.5, r: 300, color: 'rgba(255, 140, 56, 0.05)', vx: 0.15, vy: -0.3 },
+            { x: width * 0.85, y: height * 0.2, r: 280, color: 'rgba(254, 161, 102, 0.04)', vx: -0.2, vy: 0.25 }
+        ];
+
+        function renderAurora() {
+            ctx.clearRect(0, 0, width, height);
+            for (let orb of orbs) {
+                orb.x += orb.vx;
+                orb.y += orb.vy;
+                if (orb.x < -100 || orb.x > width + 100) orb.vx *= -1;
+                if (orb.y < -100 || orb.y > height + 100) orb.vy *= -1;
+
+                const grad = ctx.createRadialGradient(orb.x, orb.y, 0, orb.x, orb.y, orb.r);
+                grad.addColorStop(0, orb.color);
+                grad.addColorStop(1, 'transparent');
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(orb.x, orb.y, orb.r, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            requestAnimationFrame(renderAurora);
+        }
+        renderAurora();
+
+        // ========================================================
+        // 2. MOUSE SPOTLIGHT GLOW TRACKER
+        // ========================================================
+        document.addEventListener('mousemove', (e) => {
+            document.querySelectorAll('.spotlight-card').forEach(card => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                card.style.setProperty('--mouse-x', `${x}px`);
+                card.style.setProperty('--mouse-y', `${y}px`);
+            });
+        });
+
+        // 3D Tilt on Showcase Hero Box
+        const showcaseBox = document.getElementById('hero-showcase-box');
+        if (showcaseBox) {
+            showcaseBox.addEventListener('mousemove', (e) => {
+                const rect = showcaseBox.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                const rotateX = ((y - centerY) / centerY) * -6;
+                const rotateY = ((x - centerX) / centerX) * 6;
+                showcaseBox.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-4px)`;
+            });
+            showcaseBox.addEventListener('mouseleave', () => {
+                showcaseBox.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px)`;
+            });
+        }
+
+        // ========================================================
+        // 3. SPA VIEW SWITCHER SYSTEM
+        // ========================================================
+        function switchView(viewName) {
+            document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active-view'));
+            if (viewName === 'landing') {
+                document.getElementById('view-landing').classList.add('active-view');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                showToast('🏠 Đã về Trang Chủ Meow Bot');
+            } else if (viewName === 'servers') {
+                document.getElementById('view-servers').classList.add('active-view');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                showToast('🔑 Đăng nhập thành công! Chọn Server để cấu hình');
+            } else if (viewName === 'dashboard') {
+                document.getElementById('view-dashboard').classList.add('active-view');
+            }
+        }
+
+        function openServer(name, icon, members) {
+            document.getElementById('dash-guild-title-text').innerText = name;
+            document.getElementById('dash-guild-avatar-box').innerText = icon;
+            document.getElementById('overview-member-count').innerText = members;
+            switchView('dashboard');
+            showToast(`⚙️ Đang mở Dashboard cho: ${name}`);
+        }
+
+        function switchGuildInDash(name, icon, members, el) {
+            document.querySelectorAll('.strip-circle').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+            openServer(name, icon, members);
+        }
+
+        function selectTab(panelId, el) {
+            document.querySelectorAll('.menu-tab-btn').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+            document.querySelectorAll('.tab-panel-view').forEach(p => p.classList.remove('active'));
+            const activePanel = document.getElementById(panelId);
+            activePanel.classList.add('active');
+            document.getElementById('dash-current-tab-name').innerText = el.innerText.trim();
+            showToast(`📑 Chuyển sang tab: ${el.innerText.trim()}`);
+        }
+
+        function renderTicketPreview() {
+            const title = document.getElementById('ticket-title-input').value;
+            const desc = document.getElementById('ticket-desc-input').value;
+            document.getElementById('embed-preview-title').innerText = title || "Tiêu đề mẫu";
+            document.getElementById('embed-preview-desc').innerText = desc || "Mô tả hướng dẫn";
+        }
+
+        // ========================================================
+        // 4. ANIMATED 3D DICE ROLL WITH BOUNCE PHYSICS
+        // ========================================================
+        function rollDiceAnimated() {
+            const diceIcons = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+            const d1 = Math.floor(Math.random() * 6) + 1;
+            const d2 = Math.floor(Math.random() * 6) + 1;
+            const d3 = Math.floor(Math.random() * 6) + 1;
+            const total = d1 + d2 + d3;
+            const outcome = total >= 11 ? `TÀI (${total} Điểm)` : `XỈU (${total} Điểm)`;
+
+            const die1El = document.getElementById('die-val-1');
+            const die2El = document.getElementById('die-val-2');
+            const die3El = document.getElementById('die-val-3');
+
+            die1El.style.transform = 'translateY(-20px) rotate(720deg) scale(1.2)';
+            die2El.style.transform = 'translateY(-25px) rotate(-720deg) scale(1.2)';
+            die3El.style.transform = 'translateY(-20px) rotate(720deg) scale(1.2)';
+
+            setTimeout(() => {
+                die1El.innerText = diceIcons[d1 - 1];
+                die2El.innerText = diceIcons[d2 - 1];
+                die3El.innerText = diceIcons[d3 - 1];
+                die1El.style.transform = 'translateY(0) rotate(0deg) scale(1)';
+                die2El.style.transform = 'translateY(0) rotate(0deg) scale(1)';
+                die3El.style.transform = 'translateY(0) rotate(0deg) scale(1)';
+                document.getElementById('taixiu-status-text').innerText = `🎲 Kết quả: ${outcome} (${d1} + ${d2} + ${d3})`;
+                showToast(`🎉 Kết quả lắc Tài Xỉu: ${outcome}`);
+            }, 350);
+        }
+
+        function openDevModal(title, desc) {
+            document.getElementById('modal-heading-text').innerText = title;
+            document.getElementById('modal-desc-text').innerText = desc;
+            document.getElementById('generic-modal').style.display = 'flex';
+        }
+        function openTriggerDialog() {
+            document.getElementById('trigger-create-modal').style.display = 'flex';
+        }
+        function closeAllModals() {
+            document.getElementById('generic-modal').style.display = 'none';
+            document.getElementById('trigger-create-modal').style.display = 'none';
+        }
+
+        function saveNewTrigger() {
+            const key = document.getElementById('inp-trig-key').value;
+            const val = document.getElementById('inp-trig-val').value;
+            if (!key || !val) return alert('Vui lòng điền đủ từ khóa và phản hồi!');
+
+            const tbody = document.querySelector('#triggers-list-table tbody');
+            const tr = document.createElement('tr');
+            tr.style.borderBottom = '1px solid var(--border-glass)';
+            tr.innerHTML = `
+                <td style="padding:14px 16px;"><code>${key}</code></td>
+                <td style="padding:14px 16px;"><span style="background:var(--brand-orange-bg); color:var(--brand-orange); padding:3px 8px; border-radius:4px; font-weight:700; font-size:11px;">Exact</span></td>
+                <td style="padding:14px 16px;">${val}</td>
+                <td style="padding:14px 16px;"><button class="btn btn-dark" style="padding:4px 12px; font-size:12px;" onclick="this.closest('tr').remove(); showToast('Đã xóa trigger')">Xóa</button></td>
+            `;
+            tbody.appendChild(tr);
+            closeAllModals();
+            showToast(`✨ Đã thêm Trigger mới: ${key}`);
+            document.getElementById('inp-trig-key').value = '';
+            document.getElementById('inp-trig-val').value = '';
+        }
+
+        function showToast(text) {
+            const shelf = document.getElementById('toast-shelf');
+            const item = document.createElement('div');
+            item.className = 'toast-item';
+            item.innerHTML = `
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span>🐾</span>
+                    <span>${text}</span>
+                </div>
+                <div class="toast-progress"></div>
+            `;
+            shelf.appendChild(item);
+            setTimeout(() => {
+                item.style.opacity = '0';
+                item.style.transform = 'translateY(20px) scale(0.9)';
+                item.style.transition = 'all 0.3s ease';
+                setTimeout(() => item.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
