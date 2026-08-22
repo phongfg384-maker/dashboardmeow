@@ -416,6 +416,7 @@
             <li data-target="warn-section">⚠️ Warn Threshold</li>
             <li data-target="modcase-section">🛡️ Case Log</li>
             <li data-target="afk-section">💤 AFK Members</li>
+            <li data-target="ai-section">🤖 AI Assistant</li>
             <li data-target="premium-section">💎 Premium</li>
             <li data-target="nickname-section">🏷️ Nickname Manager</li>
             <li data-target="upload-section">🖼️ Emoji & Sticker</li>
@@ -532,6 +533,31 @@
                         <button type="submit" class="btn btn-primary">➕ THÊM / CẬP NHẬT TRIGGER</button>
                     </form>
                     <div id="trigger-list" style="margin-top:24px; border-top:1px solid var(--border-glass); padding-top:16px;"></div>
+
+                    <h3 style="margin:28px 0 14px; border-top:1px solid var(--border-glass); padding-top:24px;">🚫 Ignore Channel & Role</h3>
+                    <p style="color:var(--text-secondary); font-size:14px; margin-bottom:14px;">Tin nhắn trong kênh bị ignore, hoặc gửi bởi thành viên có role bị ignore, sẽ KHÔNG kích hoạt bất kỳ trigger nào.</p>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Thêm kênh bị ignore</label>
+                            <select id="trigger-ignore-channel-select" class="form-control"></select>
+                        </div>
+                        <div class="form-group" style="display:flex; align-items:flex-end;">
+                            <button type="button" class="btn btn-secondary" style="width:100%;" onclick="addTriggerIgnoreChannel()">➕ Thêm vào ignore</button>
+                        </div>
+                    </div>
+                    <div id="trigger-ignore-channel-list" style="margin-bottom:20px;"></div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Thêm role bị ignore</label>
+                            <select id="trigger-ignore-role-select" class="form-control"></select>
+                        </div>
+                        <div class="form-group" style="display:flex; align-items:flex-end;">
+                            <button type="button" class="btn btn-secondary" style="width:100%;" onclick="addTriggerIgnoreRole()">➕ Thêm vào ignore</button>
+                        </div>
+                    </div>
+                    <div id="trigger-ignore-role-list"></div>
                 </div>
             </div>
 
@@ -573,6 +599,32 @@
                 <div class="card">
                     <button type="button" class="btn btn-secondary" onclick="loadAfk()">🔄 Tải lại</button>
                     <div id="afk-list" style="margin-top:20px;"></div>
+                </div>
+            </div>
+
+            <div id="ai-section" class="section" data-title="🤖 AI Assistant" data-desc="Bật AI tự trả lời trong 1 kênh chỉ định">
+                <div class="card">
+                    <form id="ai-form">
+                        <div class="form-group">
+                            <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                                <input type="checkbox" id="ai-enabled" style="width:18px; height:18px;">
+                                Bật AI tự trả lời
+                            </label>
+                        </div>
+                        <div class="form-group"><label>Kênh AI hoạt động</label><select id="ai-channel" class="form-control"></select></div>
+                        <div class="form-group"><label>Model</label>
+                            <select id="ai-model" class="form-control">
+                                <option value="llama-3.3-70b-versatile">Llama 3.3 70B (mặc định, nhanh)</option>
+                                <option value="llama-3.1-8b-instant">Llama 3.1 8B (siêu nhanh, nhẹ)</option>
+                                <option value="mixtral-8x7b-32768">Mixtral 8x7B</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>System Prompt (tính cách AI)</label><textarea id="ai-prompt" class="form-control" placeholder="Bạn là một trợ lý ảo thông minh trên Discord."></textarea></div>
+                        <button type="submit" class="btn btn-primary">💾 LƯU AI ASSISTANT</button>
+                    </form>
+                    <div class="doc-box" style="margin-top:20px; background:var(--bg-input); padding:16px; border-radius:12px; border:1px solid var(--border-glass); font-size:13px; color:var(--text-secondary);">
+                        ⚠️ Trong kênh AI, mọi tin nhắn không phải lệnh (không bắt đầu bằng prefix) sẽ được gửi cho AI xử lý. Nên dùng 1 kênh riêng, tránh đặt trùng kênh chat chính.
+                    </div>
                 </div>
             </div>
 
@@ -762,7 +814,7 @@
 
                 if (channelsRes.ok) {
                     const channels = await channelsRes.json();
-                    ['ticket-channel', 'welcome-channel', 'sticky-channel', 'confess-channel', 'confess-review'].forEach(id => {
+                    ['ticket-channel', 'welcome-channel', 'sticky-channel', 'confess-channel', 'confess-review', 'trigger-ignore-channel-select', 'ai-channel'].forEach(id => {
                         const select = document.getElementById(id);
                         if (select) {
                             select.innerHTML = '<option value="">-- Vui lòng chọn kênh --</option>' +
@@ -773,7 +825,7 @@
 
                 if (rolesRes.ok) {
                     const roles = await rolesRes.json();
-                    ['ticket-role', 'autorole-role', 'reactrole-role'].forEach(id => {
+                    ['ticket-role', 'autorole-role', 'reactrole-role', 'trigger-ignore-role-select'].forEach(id => {
                         const select = document.getElementById(id);
                         if (select) {
                             select.innerHTML = '<option value="">-- Vui lòng chọn role --</option>' +
@@ -815,8 +867,10 @@
             loadGuildData();
             loadStickies();
             loadTriggers();
+            loadTriggerIgnoreList();
             loadWarnThresholds();
             loadPremium();
+            loadAIConfig();
         });
 
         // ================= STICKY =================
@@ -867,7 +921,7 @@
             if (!guildId) return;
             const res = await fetch(`/api/guilds/${guildId}/triggers`);
             if (!res.ok) return;
-            const { triggers } = await res.json();
+            const { data: triggers } = await res.json();
             const box = document.getElementById('trigger-list');
             if (!triggers || !triggers.length) { box.innerHTML = '<p style="color:var(--text-muted); font-size:13px;">Chưa có trigger nào.</p>'; return; }
             box.innerHTML = '<label style="color:#fff; font-weight:800; display:block; margin-bottom:10px;">DANH SÁCH TRIGGERS</label>' + triggers.map(t => `
@@ -897,6 +951,68 @@
             if (!guildId || !confirm(`Xoá trigger "${word}"?`)) return;
             const res = await fetch(`/api/guilds/${guildId}/triggers/${encodeURIComponent(word)}`, { method: 'DELETE' });
             if (res.ok) { alert("Đã xoá trigger!"); loadTriggers(); } else alert("Lỗi khi xoá!");
+        }
+
+        // ================= TRIGGER IGNORE (channel/role) =================
+        async function loadTriggerIgnoreList() {
+            if (!guildId) return;
+            const res = await fetch(`/api/guilds/${guildId}/trigger-ignore`);
+            if (!res.ok) return;
+            const { data } = await res.json();
+            renderTriggerIgnoreChannels(data.ignoredChannels || []);
+            renderTriggerIgnoreRoles(data.ignoredRoles || []);
+        }
+
+        function renderTriggerIgnoreChannels(ids) {
+            const box = document.getElementById('trigger-ignore-channel-list');
+            const select = document.getElementById('trigger-ignore-channel-select');
+            const nameOf = (id) => select?.querySelector(`option[value="${id}"]`)?.textContent || id;
+            box.innerHTML = ids.length
+                ? ids.map(id => `
+                    <div style="background:var(--bg-input); padding:10px 14px; border-radius:8px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; border:1px solid var(--border-glass);">
+                        <span>${nameOf(id)}</span>
+                        <button type="button" class="btn btn-secondary" style="padding:5px 10px; font-size:12px; background:#f23f43; color:#fff;" onclick="removeTriggerIgnoreChannel('${id}')">Gỡ</button>
+                    </div>`).join('')
+                : '<p style="color:var(--text-muted); font-size:13px;">Chưa ignore kênh nào.</p>';
+        }
+
+        function renderTriggerIgnoreRoles(ids) {
+            const box = document.getElementById('trigger-ignore-role-list');
+            const select = document.getElementById('trigger-ignore-role-select');
+            const nameOf = (id) => select?.querySelector(`option[value="${id}"]`)?.textContent || id;
+            box.innerHTML = ids.length
+                ? ids.map(id => `
+                    <div style="background:var(--bg-input); padding:10px 14px; border-radius:8px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; border:1px solid var(--border-glass);">
+                        <span>${nameOf(id)}</span>
+                        <button type="button" class="btn btn-secondary" style="padding:5px 10px; font-size:12px; background:#f23f43; color:#fff;" onclick="removeTriggerIgnoreRole('${id}')">Gỡ</button>
+                    </div>`).join('')
+                : '<p style="color:var(--text-muted); font-size:13px;">Chưa ignore role nào.</p>';
+        }
+
+        async function addTriggerIgnoreChannel() {
+            if (!guildId) return alert("Vui lòng chọn máy chủ trước!");
+            const channelId = document.getElementById('trigger-ignore-channel-select').value;
+            if (!channelId) return alert("Chọn 1 kênh trước!");
+            const res = await fetch(`/api/guilds/${guildId}/trigger-ignore/channels`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ channelId }) });
+            if (res.ok) loadTriggerIgnoreList(); else alert("Lỗi khi thêm ignore!");
+        }
+
+        async function removeTriggerIgnoreChannel(channelId) {
+            await fetch(`/api/guilds/${guildId}/trigger-ignore/channels/${channelId}`, { method: 'DELETE' });
+            loadTriggerIgnoreList();
+        }
+
+        async function addTriggerIgnoreRole() {
+            if (!guildId) return alert("Vui lòng chọn máy chủ trước!");
+            const roleId = document.getElementById('trigger-ignore-role-select').value;
+            if (!roleId) return alert("Chọn 1 role trước!");
+            const res = await fetch(`/api/guilds/${guildId}/trigger-ignore/roles`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ roleId }) });
+            if (res.ok) loadTriggerIgnoreList(); else alert("Lỗi khi thêm ignore!");
+        }
+
+        async function removeTriggerIgnoreRole(roleId) {
+            await fetch(`/api/guilds/${guildId}/trigger-ignore/roles/${roleId}`, { method: 'DELETE' });
+            loadTriggerIgnoreList();
         }
 
         // ================= ECONOMY =================
@@ -1015,6 +1131,32 @@
         }
 
         // ================= PREMIUM =================
+        // ================= AI ASSISTANT =================
+        async function loadAIConfig() {
+            if (!guildId) return;
+            const res = await fetch(`/api/guilds/${guildId}/ai-config`);
+            if (!res.ok) return;
+            const { data } = await res.json();
+            document.getElementById('ai-enabled').checked = Boolean(data.enabled);
+            if (data.channelId) document.getElementById('ai-channel').value = data.channelId;
+            if (data.model) document.getElementById('ai-model').value = data.model;
+            document.getElementById('ai-prompt').value = data.prompt || '';
+        }
+
+        document.getElementById('ai-form').onsubmit = async (e) => {
+            e.preventDefault();
+            if (!guildId) return alert("Vui lòng chọn máy chủ trước!");
+            const body = {
+                enabled: document.getElementById('ai-enabled').checked,
+                channelId: document.getElementById('ai-channel').value,
+                model: document.getElementById('ai-model').value,
+                prompt: document.getElementById('ai-prompt').value,
+            };
+            const res = await fetch(`/api/guilds/${guildId}/ai-config`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+            if (res.ok) alert("Lưu AI Assistant thành công!");
+            else { const err = await res.json().catch(() => ({})); alert(err.message || "Lỗi khi lưu!"); }
+        };
+
         async function loadPremium() {
             if (!guildId) return;
             const res = await fetch(`/api/guilds/${guildId}/premium`);

@@ -24,6 +24,7 @@ const WarnThreshold = require("../models/WarnThreshold");
 const WarnConfig = require("../models/WarnConfig");
 const ModCase = require("../models/ModCase");
 const Trigger = require("../models/triggerSchema");
+const TriggerIgnoreConfig = require("../models/TriggerIgnoreConfig");
 
 // Connect to MongoDB
 const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/discord-bot";
@@ -319,6 +320,34 @@ app.get('/api/guilds/:guildId/advanced-config', requireGuildAccess, async (req, 
     } catch (err) { res.status(500).json({ error: "err" }); }
 });
 
+// BUG ĐÃ SỬA: trước đây chỉ có route POST cho ticket-config, không có GET.
+// Frontend (loadGuildData) gọi GET /ticket-config lúc load trang để điền sẵn form —
+// do route không tồn tại nên Promise.all trả về response 404 (HTML, không phải JSON).
+// configRes.ok === false nên khối "if (configRes.ok)" bị bỏ qua im lặng, nhưng phần
+// NGAY TRƯỚC nó (populate dropdown role/channel) đã chạy xong rồi — nên nếu bạn thấy
+// dropdown role trống ngay từ đầu mỗi lần mở trang, khả năng cao do request tổng thể
+// bị lỗi mạng/CORS ở bước Promise.all khiến toàn bộ catch() nuốt lỗi và không có gì
+// được populate — route GET dưới đây trả JSON hợp lệ, tránh hẳn tình huống đó.
+app.get('/api/guilds/:guildId/ticket-config', requireGuildAccess, async (req, res) => {
+    try {
+        const doc = await GuildConfig.findOne({ guildId: req.params.guildId }).lean();
+        res.json({
+            channelId: doc?.ticketChannelId || "",
+            roleId: doc?.ticketStaffRoleId || "",
+            author: doc?.ticketWelcomeMessage || "",
+            title: doc?.ticketEmbedTitle || "",
+            desc: doc?.ticketEmbedDesc || "",
+            footer: doc?.ticketButtonLabel || "",
+            color: doc?.ticketEmbedColor || "#FEA166",
+            welcomeChannelId: doc?.welcomeChannelId || "",
+            welcomeMessage: doc?.welcomeEmbedDesc || "",
+            autoRoleId: doc?.autoRoleId || "",
+            reactRoleId: doc?.reactRoleId || "",
+            buttons: [],
+        });
+    } catch (err) { res.status(500).json({ error: "err" }); }
+});
+
 app.post('/api/guilds/:guildId/ticket-config', requireGuildAccess, async (req, res) => {
     try {
         const { guildId } = req.params;
@@ -541,6 +570,67 @@ app.post('/api/guilds/:guildId/triggers', requireGuildAccess, async (req, res) =
 app.delete('/api/guilds/:guildId/triggers/:triggerWord', requireGuildAccess, async (req, res) => {
     try {
         await Trigger.deleteOne({ guildId: req.params.guildId, triggerWord: req.params.triggerWord });
+        res.json({ success: true });
+    } catch (err) { res.status(500).json({ error: "err" }); }
+});
+
+// ========================================================
+// TRIGGER IGNORE LIST (channel + role) — dùng chung model với
+// lệnh /trigger ignore trên Discord để 2 bên luôn đồng bộ.
+// ========================================================
+app.get('/api/guilds/:guildId/trigger-ignore', requireGuildAccess, async (req, res) => {
+    try {
+        const doc = await TriggerIgnoreConfig.findOne({ guildId: req.params.guildId }).lean();
+        res.json({ success: true, data: { ignoredChannels: doc?.ignoredChannels || [], ignoredRoles: doc?.ignoredRoles || [] } });
+    } catch (err) { res.status(500).json({ error: "err" }); }
+});
+
+app.post('/api/guilds/:guildId/trigger-ignore/channels', requireGuildAccess, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const channelId = normalizeString(req.body.channelId);
+        if (!channelId || !CHANNEL_ID_REGEX.test(channelId)) return res.status(400).json({ error: "invalid_channel" });
+
+        await TriggerIgnoreConfig.findOneAndUpdate(
+            { guildId },
+            { $addToSet: { ignoredChannels: channelId } },
+            { upsert: true }
+        );
+        res.json({ success: true });
+    } catch (err) { res.status(500).json({ error: "err" }); }
+});
+
+app.delete('/api/guilds/:guildId/trigger-ignore/channels/:channelId', requireGuildAccess, async (req, res) => {
+    try {
+        await TriggerIgnoreConfig.findOneAndUpdate(
+            { guildId: req.params.guildId },
+            { $pull: { ignoredChannels: req.params.channelId } }
+        );
+        res.json({ success: true });
+    } catch (err) { res.status(500).json({ error: "err" }); }
+});
+
+app.post('/api/guilds/:guildId/trigger-ignore/roles', requireGuildAccess, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const roleId = normalizeString(req.body.roleId);
+        if (!roleId || !CHANNEL_ID_REGEX.test(roleId)) return res.status(400).json({ error: "invalid_role" });
+
+        await TriggerIgnoreConfig.findOneAndUpdate(
+            { guildId },
+            { $addToSet: { ignoredRoles: roleId } },
+            { upsert: true }
+        );
+        res.json({ success: true });
+    } catch (err) { res.status(500).json({ error: "err" }); }
+});
+
+app.delete('/api/guilds/:guildId/trigger-ignore/roles/:roleId', requireGuildAccess, async (req, res) => {
+    try {
+        await TriggerIgnoreConfig.findOneAndUpdate(
+            { guildId: req.params.guildId },
+            { $pull: { ignoredRoles: req.params.roleId } }
+        );
         res.json({ success: true });
     } catch (err) { res.status(500).json({ error: "err" }); }
 });
@@ -1170,6 +1260,47 @@ app.get('/api/guilds/:guildId/mass-manager/audit', requireGuildAccess, async (re
 // ========================================================
 // PREMIUM STATUS (chỉ xem trạng thái — nâng cấp Premium do chủ bot xử lý riêng)
 // ========================================================
+// ========================================================
+// AI ASSISTANT — bật/tắt AI tự trả lời trong 1 kênh chỉ định,
+// chọn model và system prompt tuỳ chỉnh.
+// ========================================================
+app.get('/api/guilds/:guildId/ai-config', requireGuildAccess, async (req, res) => {
+    try {
+        const doc = await GuildConfig.findOne({ guildId: req.params.guildId }).lean();
+        const ai = doc?.ai || {};
+        res.json({
+            success: true,
+            data: {
+                enabled: Boolean(ai.enabled),
+                channelId: ai.channelId || "",
+                model: ai.model || "llama-3.3-70b-versatile",
+                prompt: ai.prompt || "Bạn là một trợ lý ảo thông minh trên Discord.",
+            },
+        });
+    } catch (err) { res.status(500).json({ error: "err" }); }
+});
+
+app.post('/api/guilds/:guildId/ai-config', requireGuildAccess, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const enabled = Boolean(req.body.enabled);
+        const channelId = normalizeString(req.body.channelId);
+        const model = normalizeString(req.body.model).slice(0, 100) || "llama-3.3-70b-versatile";
+        const prompt = normalizeString(req.body.prompt).slice(0, 2000) || "Bạn là một trợ lý ảo thông minh trên Discord.";
+
+        if (enabled && (!channelId || !CHANNEL_ID_REGEX.test(channelId))) {
+            return res.status(400).json({ error: "channel_required", message: "Cần chọn kênh trước khi bật AI." });
+        }
+
+        await GuildConfig.findOneAndUpdate(
+            { guildId },
+            { $set: { "ai.enabled": enabled, "ai.channelId": channelId, "ai.model": model, "ai.prompt": prompt } },
+            { upsert: true }
+        );
+        res.json({ success: true });
+    } catch (err) { res.status(500).json({ error: "err" }); }
+});
+
 app.get('/api/guilds/:guildId/premium', requireGuildAccess, async (req, res) => {
     try {
         const doc = await GuildConfig.findOne({ guildId: req.params.guildId }).lean();
@@ -1225,7 +1356,15 @@ app.get(['/public/dashboard', '/public/servers', '/servers'], (req, res) => res.
 
 const serveConfig = (req, res) => res.sendFile(path.join(__dirname, '../public', 'config.html'));
 app.get('/config', serveConfig);
-app.get(['/public/config', '/public/config.html'], (req, res) => res.redirect(301, '/config'));
+// BUG ĐÃ SỬA: redirect cũ dùng res.redirect(301, '/config') — bỏ luôn query string
+// (?guildId=...) trong lúc redirect. Nếu link cũ/bookmark nào trỏ vào /public/config.html?guildId=X
+// thì sau redirect sẽ mất sạch guildId, khiến trang /config load lên KHÔNG có guildId,
+// và mọi API gọi role/channel/config đều fail cho MỌI server (không phải lỗi riêng của
+// từng server) — đúng triệu chứng "không tìm được role ở từng server". Giờ giữ nguyên query string.
+app.get(['/public/config', '/public/config.html'], (req, res) => {
+    const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
+    res.redirect(301, '/config' + qs);
+});
 
 const serveDocs = (req, res) => res.sendFile(path.join(__dirname, '../public', 'user_public', 'docs.html'));
 app.get('/docs', serveDocs);
